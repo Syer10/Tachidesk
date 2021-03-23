@@ -24,7 +24,7 @@ Anyways, for more info checkout [finished milestone #1](https://github.com/AriaM
 ### All Operating Systems
 You should have The Java Runtime Environment(JRE) 8 or newer and a modern browser installed. Also an internet connection is required as almost everything this app does is downloading stuff. 
 
-Download the latest jar release from [the releases section](https://github.com/AriaMoradi/Tachidesk/releases).
+Download the latest jar release from [the releases section](https://github.com/AriaMoradi/Tachidesk/releases) (**Note: `Tachidesk-X.Y.Z-rxxx-no-webUI.jar` is probably not the version that you want!**)
 
 Double click on the jar file or run `java -jar Tachidesk-vX.Y.Z-rxxx.jar` from a Terminal/Command Prompt window to run the app which will open a new browser window automatically. Also the System Tray Icon is your friend if you need to open the browser window again or close Tachidesk.
 

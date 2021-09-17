@@ -5,9 +5,8 @@ import suwayomi.tachidesk.manga.impl.backup.BackupFlags
 import suwayomi.tachidesk.manga.impl.backup.proto.ProtoBackupExport
 import suwayomi.tachidesk.manga.impl.backup.proto.ProtoBackupImport
 import suwayomi.tachidesk.manga.impl.backup.proto.ProtoBackupValidator
+import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupFull
 import suwayomi.tachidesk.server.JavalinSetup.future
-import java.text.SimpleDateFormat
-import java.util.Date
 
 /*
  * Copyright (C) Contributors to the Suwayomi project
@@ -58,9 +57,7 @@ object BackupController {
     /** returns a Tachiyomi protobuf backup created from the current database as a file */
     fun protobufExportFile(ctx: Context) {
         ctx.contentType("application/octet-stream")
-        val currentDate = SimpleDateFormat("yyyy-MM-dd_HH-mm").format(Date())
-
-        ctx.header("Content-Disposition", """attachment; filename="tachidesk_$currentDate.proto.gz"""")
+        ctx.header("Content-Disposition", """attachment; filename="${BackupFull.getDefaultFilename()}"""")
         ctx.future(
             future {
                 ProtoBackupExport.createBackup(

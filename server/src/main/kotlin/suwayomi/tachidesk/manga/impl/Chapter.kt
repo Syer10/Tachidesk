@@ -39,14 +39,18 @@ object Chapter {
         return if (onlineFetch) {
             getSourceChapters(mangaId)
         } else {
-            transaction {
-                ChapterTable.select { ChapterTable.manga eq mangaId }.orderBy(ChapterTable.chapterIndex to DESC)
-                    .map {
-                        ChapterTable.toDataClass(it)
-                    }
-            }.ifEmpty {
+            getDatabaseChapters(mangaId).ifEmpty {
                 getSourceChapters(mangaId)
             }
+        }
+    }
+
+    fun getDatabaseChapters(mangaId: Int): List<ChapterDataClass> {
+        return transaction {
+            ChapterTable.select { ChapterTable.manga eq mangaId }.orderBy(ChapterTable.chapterIndex to DESC)
+                .map {
+                    ChapterTable.toDataClass(it)
+                }
         }
     }
 

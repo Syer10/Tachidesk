@@ -7,7 +7,6 @@ package suwayomi.tachidesk.manga.impl.backup.proto
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-import kotlinx.coroutines.runBlocking
 import okio.buffer
 import okio.gzip
 import okio.sink
@@ -26,7 +25,6 @@ import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupManga
 import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupSerializer
 import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupSource
 import suwayomi.tachidesk.manga.model.table.CategoryTable
-import suwayomi.tachidesk.manga.model.table.MangaStatus
 import suwayomi.tachidesk.manga.model.table.MangaTable
 import suwayomi.tachidesk.manga.model.table.SourceTable
 import suwayomi.tachidesk.manga.model.table.toDataClass
@@ -58,38 +56,17 @@ object ProtoBackupExport : ProtoBackupBase() {
 
     private fun backupManga(databaseManga: Query, flags: BackupFlags): List<BackupManga> {
         return databaseManga.map { mangaRow ->
-            val backupManga = BackupManga(
-                mangaRow[MangaTable.sourceReference],
-                mangaRow[MangaTable.url],
-                mangaRow[MangaTable.title],
-                mangaRow[MangaTable.artist],
-                mangaRow[MangaTable.author],
-                mangaRow[MangaTable.description],
-                mangaRow[MangaTable.genre]?.split(", ") ?: emptyList(),
-                MangaStatus.valueOf(mangaRow[MangaTable.status]).value,
-                mangaRow[MangaTable.thumbnail_url],
-                0, // not supported in Tachidesk
-                0, // not supported in Tachidesk
+            val backupManga = BackupManga.copyFrom(
+                MangaTable.toDataClass(mangaRow)
             )
 
             val mangaId = mangaRow[MangaTable.id].value
 
             if (flags.includeChapters) {
-                val chapters = runBlocking { Chapter.getChapterList(mangaId) }
-                backupManga.chapters = chapters.map {
-                    BackupChapter(
-                        it.url,
-                        it.name,
-                        it.scanlator,
-                        it.read,
-                        it.bookmarked,
-                        it.lastPageRead,
-                        0, // not supported in Tachidesk
-                        it.uploadDate,
-                        it.chapterNumber,
-                        it.index,
-                    )
-                }
+                backupManga.chapters = Chapter.getDatabaseChapters(mangaId)
+                    .map {
+                        BackupChapter.copyFrom(it)
+                    }
             }
 
             if (flags.includeCategories) {
@@ -112,11 +89,7 @@ object ProtoBackupExport : ProtoBackupBase() {
         return CategoryTable.selectAll().orderBy(CategoryTable.order to SortOrder.ASC).map {
             CategoryTable.toDataClass(it)
         }.map {
-            BackupCategory(
-                it.name,
-                it.order,
-                0, // not supported in Tachidesk
-            )
+            BackupCategory.copyFrom(it)
         }
     }
 

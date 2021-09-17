@@ -2,10 +2,9 @@ package suwayomi.tachidesk.manga.impl.backup.proto.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import suwayomi.tachidesk.manga.impl.backup.models.ChapterImpl
-import suwayomi.tachidesk.manga.impl.backup.models.Manga
-import suwayomi.tachidesk.manga.impl.backup.models.MangaImpl
-import suwayomi.tachidesk.manga.impl.backup.models.TrackImpl
+import suwayomi.tachidesk.manga.model.dataclass.ChapterDataClass
+import suwayomi.tachidesk.manga.model.dataclass.MangaDataClass
+import suwayomi.tachidesk.manga.model.table.MangaStatus
 
 @Serializable
 data class BackupManga(
@@ -37,53 +36,51 @@ data class BackupManga(
     @ProtoNumber(103) var viewer_flags: Int? = null,
     @ProtoNumber(104) var history: List<BackupHistory> = emptyList(),
 ) {
-    fun getMangaImpl(): MangaImpl {
-        return MangaImpl().apply {
-            url = this@BackupManga.url
-            title = this@BackupManga.title
-            artist = this@BackupManga.artist
-            author = this@BackupManga.author
-            description = this@BackupManga.description
-            genre = this@BackupManga.genre.joinToString()
-            status = this@BackupManga.status
-            thumbnail_url = this@BackupManga.thumbnailUrl
-            favorite = this@BackupManga.favorite
-            source = this@BackupManga.source
-            date_added = this@BackupManga.dateAdded
-            viewer_flags = this@BackupManga.viewer_flags ?: this@BackupManga.viewer
-            chapter_flags = this@BackupManga.chapterFlags
-        }
+    fun getMangaDataClass(): MangaDataClass {
+        return MangaDataClass(
+            url = this@BackupManga.url,
+            title = this@BackupManga.title,
+            artist = this@BackupManga.artist,
+            author = this@BackupManga.author,
+            description = this@BackupManga.description,
+            genre = this@BackupManga.genre,
+            status = MangaStatus.valueOf(this@BackupManga.status).name,
+            thumbnailUrl = this@BackupManga.thumbnailUrl,
+            inLibrary = this@BackupManga.favorite,
+            sourceId = this@BackupManga.source.toString(),
+            id = -1
+        )
     }
 
-    fun getChaptersImpl(): List<ChapterImpl> {
+    fun getChapterDataClasses(): List<ChapterDataClass> {
         return chapters.map {
-            it.toChapterImpl()
+            it.toChapterDataClass(chapters.size)
         }
     }
 
-    fun getTrackingImpl(): List<TrackImpl> {
+    /*fun getTrackingImpl(): List<TrackImpl> {
         return tracking.map {
             it.getTrackingImpl()
         }
-    }
+    }*/
 
     companion object {
-        fun copyFrom(manga: Manga): BackupManga {
+        fun copyFrom(manga: MangaDataClass): BackupManga {
             return BackupManga(
                 url = manga.url,
                 title = manga.title,
                 artist = manga.artist,
                 author = manga.author,
                 description = manga.description,
-                genre = manga.getGenres() ?: emptyList(),
-                status = manga.status,
-                thumbnailUrl = manga.thumbnail_url,
-                favorite = manga.favorite,
-                source = manga.source,
-                dateAdded = manga.date_added,
-                viewer = manga.readingModeType,
-                viewer_flags = manga.viewer_flags,
-                chapterFlags = manga.chapter_flags
+                genre = manga.genre,
+                status = MangaStatus.valueOf(manga.status).value,
+                thumbnailUrl = manga.thumbnailUrl,
+                favorite = manga.inLibrary,
+                source = manga.sourceId.toLong(),
+                // dateAdded = manga.date_added,
+                // viewer = manga.readingModeType,
+                // viewer_flags = manga.viewer_flags,
+                // chapterFlags = manga.chapter_flags
             )
         }
     }

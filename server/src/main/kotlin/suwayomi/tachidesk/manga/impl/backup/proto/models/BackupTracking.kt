@@ -2,8 +2,6 @@ package suwayomi.tachidesk.manga.impl.backup.proto.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import suwayomi.tachidesk.manga.impl.backup.models.Track
-import suwayomi.tachidesk.manga.impl.backup.models.TrackImpl
 
 @Serializable
 data class BackupTracking(
@@ -26,7 +24,7 @@ data class BackupTracking(
     // finishedReadingDate is called endReadTime in 1.x
     @ProtoNumber(11) var finishedReadingDate: Long = 0,
 ) {
-    fun getTrackingImpl(): TrackImpl {
+    /* fun getTrackingImpl(): TrackImpl {
         return TrackImpl().apply {
             sync_id = this@BackupTracking.syncId
             media_id = this@BackupTracking.mediaId
@@ -61,5 +59,5 @@ data class BackupTracking(
                 trackingUrl = track.tracking_url
             )
         }
-    }
+    }*/
 }

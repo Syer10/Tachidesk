@@ -1,12 +1,12 @@
 package suwayomi.tachidesk.manga.impl.backup.proto.models
 
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 object BackupFull {
     fun getDefaultFilename(): String {
-        val date = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
-        return "tachiyomi_$date.proto.gz"
+        val date = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm")
+            .format(Instant.now())
+        return "tachidesk_$date.proto.gz"
     }
 }

@@ -2,8 +2,7 @@ package suwayomi.tachidesk.manga.impl.backup.proto.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import suwayomi.tachidesk.manga.impl.backup.models.Category
-import suwayomi.tachidesk.manga.impl.backup.models.CategoryImpl
+import suwayomi.tachidesk.manga.model.dataclass.CategoryDataClass
 
 @Serializable
 class BackupCategory(
@@ -13,20 +12,11 @@ class BackupCategory(
     // Bump by 100 to specify this is a 0.x value
     @ProtoNumber(100) var flags: Int = 0,
 ) {
-    fun getCategoryImpl(): CategoryImpl {
-        return CategoryImpl().apply {
-            name = this@BackupCategory.name
-            flags = this@BackupCategory.flags
-            order = this@BackupCategory.order
-        }
-    }
-
     companion object {
-        fun copyFrom(category: Category): BackupCategory {
+        fun copyFrom(category: CategoryDataClass): BackupCategory {
             return BackupCategory(
                 name = category.name,
-                order = category.order,
-                flags = category.flags
+                order = category.order
             )
         }
     }

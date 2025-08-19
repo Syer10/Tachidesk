@@ -1,9 +1,15 @@
 package suwayomi.tachidesk.graphql.server.primitives
 
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.AbstractQuery
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.ColumnType
+import org.jetbrains.exposed.sql.Expression
+import org.jetbrains.exposed.sql.ExpressionWithColumnType
+import org.jetbrains.exposed.sql.IColumnType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
+import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greater
@@ -67,7 +73,7 @@ fun <T> Query.applyBeforeAfter(
 
 @JvmName("greaterNotUniqueIntKey")
 fun <T : Comparable<T>> greaterNotUnique(
-    column: Column<T>,
+    column: ExpressionWithColumnType<T>,
     idColumn: Column<EntityID<Int>>,
     cursor: Cursor,
     toValue: (String) -> T,
@@ -75,7 +81,7 @@ fun <T : Comparable<T>> greaterNotUnique(
 
 @JvmName("greaterNotUniqueLongKey")
 fun <T : Comparable<T>> greaterNotUnique(
-    column: Column<T>,
+    column: ExpressionWithColumnType<T>,
     idColumn: Column<EntityID<Long>>,
     cursor: Cursor,
     toValue: (String) -> T,
@@ -89,7 +95,7 @@ fun greaterNotUnique(
 ): Op<Boolean> = greaterNotUniqueImpl(column, idColumn, cursor, String::toInt, String::toInt)
 
 private fun <K : Comparable<K>, V : Comparable<V>> greaterNotUniqueImpl(
-    column: Column<V>,
+    column: ExpressionWithColumnType<V>,
     idColumn: Column<EntityID<K>>,
     cursor: Cursor,
     toKey: (String) -> K,
@@ -115,7 +121,7 @@ private fun <K : Comparable<K>, V : Comparable<V>> greaterNotUniqueImpl(
 
 @JvmName("greaterNotUniqueStringKey")
 fun <T : Comparable<T>> greaterNotUnique(
-    column: Column<T>,
+    column: ExpressionWithColumnType<T>,
     idColumn: Column<String>,
     cursor: Cursor,
     toValue: (String) -> T,
@@ -127,7 +133,7 @@ fun <T : Comparable<T>> greaterNotUnique(
 
 @JvmName("lessNotUniqueIntKey")
 fun <T : Comparable<T>> lessNotUnique(
-    column: Column<T>,
+    column: ExpressionWithColumnType<T>,
     idColumn: Column<EntityID<Int>>,
     cursor: Cursor,
     toValue: (String) -> T,
@@ -135,7 +141,7 @@ fun <T : Comparable<T>> lessNotUnique(
 
 @JvmName("lessNotUniqueLongKey")
 fun <T : Comparable<T>> lessNotUnique(
-    column: Column<T>,
+    column: ExpressionWithColumnType<T>,
     idColumn: Column<EntityID<Long>>,
     cursor: Cursor,
     toValue: (String) -> T,
@@ -149,7 +155,7 @@ fun lessNotUnique(
 ): Op<Boolean> = lessNotUniqueImpl(column, idColumn, cursor, String::toInt, String::toInt)
 
 private fun <K : Comparable<K>, V : Comparable<V>> lessNotUniqueImpl(
-    column: Column<V>,
+    column: ExpressionWithColumnType<V>,
     idColumn: Column<EntityID<K>>,
     cursor: Cursor,
     toKey: (String) -> K,
@@ -162,7 +168,7 @@ private fun <K : Comparable<K>, V : Comparable<V>> lessNotUniqueImpl(
 
 @JvmName("lessNotUniqueEntityValue")
 private fun <K : Comparable<K>, V : Comparable<V>> lessNotUniqueImpl(
-    column: Column<EntityID<V>>,
+    column: ExpressionWithColumnType<EntityID<V>>,
     idColumn: Column<EntityID<K>>,
     cursor: Cursor,
     toKey: (String) -> K,
@@ -175,7 +181,7 @@ private fun <K : Comparable<K>, V : Comparable<V>> lessNotUniqueImpl(
 
 @JvmName("lessNotUniqueStringKey")
 fun <T : Comparable<T>> lessNotUnique(
-    column: Column<T>,
+    column: ExpressionWithColumnType<T>,
     idColumn: Column<String>,
     cursor: Cursor,
     toValue: (String) -> T,
@@ -183,4 +189,18 @@ fun <T : Comparable<T>> lessNotUnique(
     val id = cursor.value.substringBefore("\\-")
     val value = toValue(cursor.value.substringAfter("\\-"))
     return (column less value) or ((column eq value) and (idColumn less id))
+}
+
+inline fun <T> wrapAsExpressionWithColumnType(
+    query: AbstractQuery<*>,
+    columnType: ColumnType<T & Any>
+) = object : ExpressionWithColumnType<T>() {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        append("(")
+        query.prepareSQL(this)
+        append(")")
+    }
+
+    override val columnType: IColumnType<T & Any>
+        get() = columnType
 }

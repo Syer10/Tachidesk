@@ -10,12 +10,22 @@ package suwayomi.tachidesk.graphql.queries
 import com.expediagroup.graphql.generator.annotations.GraphQLDeprecated
 import com.expediagroup.graphql.server.extensions.getValueFromDataLoader
 import graphql.schema.DataFetchingEnvironment
+import org.jetbrains.exposed.sql.AbstractQuery
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.ColumnType
+import org.jetbrains.exposed.sql.Expression
+import org.jetbrains.exposed.sql.ExpressionWithColumnType
+import org.jetbrains.exposed.sql.IColumnType
+import org.jetbrains.exposed.sql.LongColumnType
 import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.QueryBuilder
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greater
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.wrapAsExpression
 import suwayomi.tachidesk.graphql.queries.filter.BooleanFilter
 import suwayomi.tachidesk.graphql.queries.filter.ComparableScalarFilter
 import suwayomi.tachidesk.graphql.queries.filter.Filter
@@ -37,9 +47,11 @@ import suwayomi.tachidesk.graphql.server.primitives.applyBeforeAfter
 import suwayomi.tachidesk.graphql.server.primitives.greaterNotUnique
 import suwayomi.tachidesk.graphql.server.primitives.lessNotUnique
 import suwayomi.tachidesk.graphql.server.primitives.maybeSwap
+import suwayomi.tachidesk.graphql.server.primitives.wrapAsExpressionWithColumnType
 import suwayomi.tachidesk.graphql.types.MangaNodeList
 import suwayomi.tachidesk.graphql.types.MangaType
 import suwayomi.tachidesk.manga.model.table.CategoryMangaTable
+import suwayomi.tachidesk.manga.model.table.ChapterTable
 import suwayomi.tachidesk.manga.model.table.MangaStatus
 import suwayomi.tachidesk.manga.model.table.MangaTable
 import java.util.concurrent.CompletableFuture
@@ -72,7 +84,13 @@ class MangaQuery {
                 ID -> MangaTable.id less cursor.value.toInt()
                 TITLE -> lessNotUnique(MangaTable.title, MangaTable.id, cursor, String::toString)
                 IN_LIBRARY_AT -> lessNotUnique(MangaTable.inLibraryAt, MangaTable.id, cursor, String::toLong)
-                LAST_FETCHED_AT -> lessNotUnique(MangaTable.lastFetchedAt, MangaTable.id, cursor, String::toLong)
+                LAST_FETCHED_AT -> lessNotUnique(wrapAsExpressionWithColumnType(
+                    ChapterTable
+                        .select(
+                            ChapterTable.id.count(),
+                        ).where { ((ChapterTable.isDownloaded eq true) and (ChapterTable.manga eq MangaTable.id)) },
+                    LongColumnType(),
+                ), MangaTable.id, cursor, String::toLong)
             }
 
         override fun asCursor(type: MangaType): Cursor {
@@ -237,10 +255,17 @@ class MangaQuery {
     ): MangaNodeList {
         val queryResults =
             transaction {
+                val sortData =
+                    wrapAsExpression<Long>(
+                        ChapterTable
+                            .select(
+                                ChapterTable.id.count(),
+                            ).where { ((ChapterTable.isDownloaded eq true) and (ChapterTable.manga eq MangaTable.id)) },
+                    )
                 val res =
                     MangaTable
                         .leftJoin(CategoryMangaTable)
-                        .select(MangaTable.columns)
+                        .select(MangaTable.columns + sortData)
                         .withDistinctOn(MangaTable.id)
 
                 res.applyOps(condition, filter)
@@ -250,7 +275,7 @@ class MangaQuery {
                     val deprecatedSort = listOfNotNull(orderBy?.let { MangaOrder(orderBy, orderByType) })
                     val actualSort = (order.orEmpty() + deprecatedSort + baseSort)
                     actualSort.forEach { (orderBy, orderByType) ->
-                        val orderByColumn = orderBy.column
+                        val orderByColumn = // sortData or orderBy.column
                         val orderType = orderByType.maybeSwap(last ?: before)
 
                         res.orderBy(orderByColumn to orderType)

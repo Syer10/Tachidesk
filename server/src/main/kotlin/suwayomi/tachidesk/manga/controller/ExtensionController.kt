@@ -171,7 +171,7 @@ object ExtensionController {
                 ctx.future {
                     future { Extension.getExtensionIcon(pkgName) }
                         .thenApply {
-                            ctx.header("content-type", it.second)
+                            ctx.contentType(it.second)
                             val httpCacheSeconds = 365.days.inWholeSeconds
                             ctx.header("cache-control", "max-age=$httpCacheSeconds, immutable")
                             ctx.result(it.first)

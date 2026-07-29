@@ -183,7 +183,7 @@ object JavalinSetup {
 
         get(loginPath) { ctx ->
             val locale: Locale = LocalizationHelper.ctxToLocale(ctx)
-            ctx.header("content-type", "text/html")
+            ctx.contentType("text/html;charset=UTF-8")
             val httpCacheSeconds = 1.days.inWholeSeconds
             ctx.header("cache-control", "max-age=$httpCacheSeconds")
             ctx.render(
@@ -217,7 +217,7 @@ object JavalinSetup {
             }
 
             val locale: Locale = LocalizationHelper.ctxToLocale(ctx)
-            ctx.header("content-type", "text/html")
+            ctx.contentType("text/html;charset=UTF-8")
             ctx.req().session.invalidate()
             ctx.render(
                 "Login.jte",

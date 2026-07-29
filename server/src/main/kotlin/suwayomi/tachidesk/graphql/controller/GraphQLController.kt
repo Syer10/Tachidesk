@@ -7,7 +7,6 @@
 
 package suwayomi.tachidesk.graphql.controller
 
-import io.javalin.http.ContentType
 import io.javalin.http.Context
 import io.javalin.http.HttpStatus
 import io.javalin.websocket.WsConfig
@@ -35,7 +34,7 @@ object GraphQLController {
     }
 
     fun playground(ctx: Context) {
-        ctx.contentType(ContentType.TEXT_HTML)
+        ctx.contentType("text/html;charset=UTF-8")
         ctx.result(javaClass.getResourceAsStream("/graphql-playground.html")!!)
     }
 

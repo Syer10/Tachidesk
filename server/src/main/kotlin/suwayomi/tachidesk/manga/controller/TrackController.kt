@@ -177,7 +177,7 @@ object TrackController {
                 ctx.future {
                     future { Track.getTrackerThumbnail(trackerId) }
                         .thenApply {
-                            ctx.header("content-type", it.second)
+                            ctx.contentType(it.second)
                             val httpCacheSeconds = 1.days.inWholeSeconds
                             ctx.header("cache-control", "max-age=$httpCacheSeconds")
                             ctx.result(it.first)

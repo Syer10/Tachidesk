@@ -108,7 +108,7 @@ object MangaController {
                 ctx.future {
                     future { Manga.getMangaThumbnail(mangaId) }
                         .thenApply {
-                            ctx.header("content-type", it.second)
+                            ctx.contentType(it.second)
                             val httpCacheSeconds = 1.days.inWholeSeconds
                             ctx.header("cache-control", "max-age=$httpCacheSeconds")
                             ctx.result(it.first)
@@ -495,7 +495,7 @@ object MangaController {
                             format = format,
                         )
                     }.thenApply {
-                        ctx.header("content-type", it.second)
+                        ctx.contentType(it.second)
                         val httpCacheSeconds = 1.days.inWholeSeconds
                         ctx.header("cache-control", "max-age=$httpCacheSeconds")
                         ctx.result(it.first)
@@ -534,7 +534,7 @@ object MangaController {
                     ctx.future {
                         future { ChapterDownloadHelper.getCbzMetadataForDownload(chapterId) }
                             .thenApply { (fileName, fileSize) ->
-                                ctx.header("Content-Type", contentType)
+                                ctx.contentType(contentType)
                                 ctx.header("Content-Disposition", "attachment; filename=\"$fileName\"")
                                 ctx.header("Content-Length", fileSize.toString())
                                 ctx.status(HttpStatus.OK)
@@ -545,7 +545,7 @@ object MangaController {
                     ctx.future {
                         future { ChapterDownloadHelper.getCbzForDownload(chapterId, shouldMarkAsRead) }
                             .thenApply { (inputStream, fileName, fileSize) ->
-                                ctx.header("Content-Type", contentType)
+                                ctx.contentType(contentType)
                                 ctx.header("Content-Disposition", "attachment; filename=\"$fileName\"")
                                 ctx.header("Content-Length", fileSize.toString())
                                 ctx.result(inputStream)

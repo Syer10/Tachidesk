@@ -7,7 +7,6 @@ package suwayomi.tachidesk.global.controller
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-import io.javalin.http.ContentType
 import io.javalin.http.HttpStatus
 import io.javalin.http.RedirectResponse
 import io.javalin.websocket.WsConfig
@@ -49,7 +48,7 @@ object WebViewController {
                     }
                 }
                 val locale: Locale = LocalizationHelper.ctxToLocale(ctx, lang)
-                ctx.contentType(ContentType.TEXT_HTML)
+                ctx.contentType("text/html;charset=UTF-8")
                 ctx.render(
                     "Webview.jte",
                     mapOf(

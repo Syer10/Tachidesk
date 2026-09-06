@@ -202,12 +202,6 @@ object UserCodeService {
             findUnconsumedCode(UserCodePurpose.REGISTRATION, code, now)
                 ?: throw UserCodeRedemptionException()
 
-        val codeId = match[UserCodeTable.id].value
-
-        if (!claimCode(codeId, now)) {
-            throw UserCodeRedemptionException()
-        }
-
         val userExists =
             transaction {
                 UserAccountTable
@@ -218,6 +212,12 @@ object UserCodeService {
 
         if (userExists) {
             throw Exception("Username already exists")
+        }
+
+        val codeId = match[UserCodeTable.id].value
+
+        if (!claimCode(codeId, now)) {
+            throw UserCodeRedemptionException()
         }
 
         val userId = createUser(username, password)

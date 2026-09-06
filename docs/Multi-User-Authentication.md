@@ -73,7 +73,7 @@ Accounts are granted fine-grained permissions. The `ADMIN` role (user `1`) bypas
 | `DOWNLOAD_CHAPTERS` | Enqueueing chapter downloads |
 | `ACCESS_NSFW` | Viewing/fetching NSFW sources and extensions |
 | `MANAGE_SETTINGS` | Reading (real values) / writing global server settings; including server settings in backup exports and applying them on backup restore |
-| `MANAGE_USERS` | Registering users, listing users, granting/revoking permissions, setting roles, issuing/redeeming user codes |
+| `MANAGE_USERS` | Registering users, listing users, granting/revoking permissions, setting roles, issuing user codes |
 | `MANAGE_EXTENSION_STORES` | Adding/removing extension stores |
 | `MANAGE_SOURCE_PREFERENCES` | Modifying global ConfigurableSource preferences |
 | `MANAGE_CACHE` | Clearing cached images and webview cookies/cache |

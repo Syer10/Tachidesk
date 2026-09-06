@@ -244,8 +244,8 @@ class CategoryDefaultTest : ApplicationTest() {
         )
     }
 
-    @Test
     // flakey test
+    @Test
     fun `sync delete protection keeps the default row and removes remote-absent landing category`() =
         runTest {
             val userId = createUser("syncprotect_a")

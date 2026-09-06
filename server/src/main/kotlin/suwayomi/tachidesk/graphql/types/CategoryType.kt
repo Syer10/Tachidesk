@@ -27,6 +27,7 @@ class CategoryType(
     val default: Boolean,
     val includeInUpdate: IncludeOrExclude,
     val includeInDownload: IncludeOrExclude,
+    val isDefaultCategory: Boolean = id == 0,
 ) : Node {
     constructor(row: ResultRow) : this(
         row[CategoryTable.id].value,

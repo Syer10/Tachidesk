@@ -33,7 +33,7 @@ class UserCodeType(
         code.createdBy,
     )
 
-    fun user(dataFetchingEnvironment: DataFetchingEnvironment): CompletableFuture<out UserType?>? {
+    fun user(dataFetchingEnvironment: DataFetchingEnvironment): CompletableFuture<out UserType?> {
         val userId = this.userId ?: return CompletableFuture.completedFuture(null)
         return dataFetchingEnvironment.getValueFromDataLoader<Int, UserType>("UserDataLoader", userId)
     }

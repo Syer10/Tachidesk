@@ -418,10 +418,10 @@ class UserMutationTest : GraphQLTest() {
         val code = response.dataPath("createRecoveryCode", "code") as String
         val expiresAt = (response.dataPath("createRecoveryCode", "expiresAt") as String).toLong()
 
-        assertEquals(26, code.length, "the code should be 26 characters long")
+        assertEquals(22, code.length, "the code should be 22 characters long")
         assertTrue(
-            code.all { it in "0123456789ABCDEFGHJKMNPQRSTVWXYZ" },
-            "the code should only contain Crockford base32 characters",
+            code.all { it in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" },
+            "the code should only contain uppercase Base64 URL-safe characters",
         )
 
         val expected = (System.currentTimeMillis() / 1000) + 86_400

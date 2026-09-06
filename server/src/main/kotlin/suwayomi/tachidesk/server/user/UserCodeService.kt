@@ -28,6 +28,7 @@ import suwayomi.tachidesk.manga.impl.Category
 import suwayomi.tachidesk.manga.impl.util.lang.isNotEmpty
 import suwayomi.tachidesk.manga.model.table.CategoryTable
 import java.security.SecureRandom
+import kotlin.io.encoding.Base64
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
@@ -44,9 +45,7 @@ object UserCodeService {
 
     private val RECOVERY_TTL = 1.days
     private val REGISTRATION_TTL = 7.days
-
-    private const val CODE_LENGTH = 26
-    private const val CROCKFORD_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+    private val base64 = Base64.UrlSafe.withPadding(Base64.PaddingOption.ABSENT)
 
     data class IssuedCode(
         val code: String,
@@ -65,34 +64,12 @@ object UserCodeService {
     private fun now(): Instant = Clock.System.now()
 
     /**
-     * Generates a 128-bit random code encoded as 26 Crockford base32 characters.
+     * Generates a 128-bit random code encoded as base64.
      */
     fun generateCode(): String {
         val bytes = ByteArray(16)
         secureRandom.nextBytes(bytes)
-
-        val sb = StringBuilder(CODE_LENGTH)
-        var bitBuffer = 0
-        var bitsRemaining = 0
-
-        for (b in bytes) {
-            for (bitIndex in 7 downTo 0) {
-                bitBuffer = (bitBuffer shl 1) or ((b.toInt() shr bitIndex) and 1)
-                bitsRemaining++
-                if (bitsRemaining == 5) {
-                    sb.append(CROCKFORD_ALPHABET[bitBuffer])
-                    bitBuffer = 0
-                    bitsRemaining = 0
-                }
-            }
-        }
-
-        // 128 bits = 25 full 5-bit groups + 3 leftover bits for the final character
-        if (sb.length < CODE_LENGTH) {
-            sb.append(CROCKFORD_ALPHABET[bitBuffer])
-        }
-
-        return sb.toString()
+        return base64.encode(bytes).uppercase()
     }
 
     /**

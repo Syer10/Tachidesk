@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - (**Logs**) Add IP location logging
 - (**Cache/API**) Add a way to clear cache & cookies
 - (**API**) Add platform information to `aboutServer` query
+- (**Category/API**) Add `isDefaultCategory` in preparation of incompatible changes of future versions
 
 ### Changed
 - (**SystemTray**) Disable DorkBox update requests
@@ -44,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - (**WebView**) Fix `kcef` causing the server startup to fail
 - (**Category**) Fix library/category counts not matching the actual number of manga due to duplicate category-manga rows
 - (**Migration/Extension**) Fix `extensionRepos` setting not being migrated to `extensionStores`
+- (**Extension/Android**) Implement fromHtml with flags for author's note support
 
 ## [v2.3.2243] - 2026-07-13
 

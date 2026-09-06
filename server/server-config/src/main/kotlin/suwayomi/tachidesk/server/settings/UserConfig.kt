@@ -10,6 +10,7 @@ import suwayomi.tachidesk.graphql.types.SettingsDownloadConversionHeaderType
 import suwayomi.tachidesk.graphql.types.SettingsDownloadConversionType
 import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupSettingsDownloadConversionHeaderType
 import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupSettingsDownloadConversionType
+import suwayomi.tachidesk.server.util.downloadConversionTypeInfo
 import kotlin.reflect.KClass
 import kotlin.reflect.typeOf
 import kotlin.time.Duration
@@ -262,88 +263,7 @@ class UserConfig {
         protoNumber = 22,
         group = SettingGroup.DOWNLOADER,
         defaultValue = emptyMap(),
-        typeInfo =
-            SettingsRegistry.PartialTypeInfo(
-                specificType = "List<SettingsDownloadConversionType>",
-                interfaceType = "List<SettingsDownloadConversion>",
-                backupType = "List<BackupSettingsDownloadConversionType>",
-                imports =
-                    listOf(
-                        "suwayomi.tachidesk.manga.impl.backup.proto.models.BackupSettingsDownloadConversionType",
-                    ),
-                convertToGqlType = { value ->
-                    @Suppress("UNCHECKED_CAST")
-                    val castedValue = value as Map<String, DownloadConversion>
-
-                    castedValue.map {
-                        SettingsDownloadConversionType(
-                            it.key,
-                            it.value.target,
-                            it.value.compressionLevel,
-                            it.value.callTimeout,
-                            it.value.connectTimeout,
-                            it.value.headers?.map { header ->
-                                SettingsDownloadConversionHeaderType(
-                                    header.key,
-                                    header.value,
-                                )
-                            },
-                        )
-                    }
-                },
-                convertToInternalType = { list ->
-                    @Suppress("UNCHECKED_CAST")
-                    val castedList = list as List<SettingsDownloadConversionType>
-
-                    castedList.associate {
-                        it.mimeType to
-                            DownloadConversion(
-                                target = it.target,
-                                compressionLevel = it.compressionLevel,
-                                callTimeout = it.callTimeout,
-                                connectTimeout = it.connectTimeout,
-                                headers = it.headers?.associate { header ->
-                                    header.name to header.value
-                                },
-                            )
-                    }
-                },
-                convertToBackupType = { value ->
-                    @Suppress("UNCHECKED_CAST")
-                    val castedValue = value as Map<String, DownloadConversion>
-
-                    castedValue.map {
-                        BackupSettingsDownloadConversionType(
-                            it.key,
-                            it.value.target,
-                            it.value.compressionLevel,
-                            it.value.callTimeout,
-                            it.value.connectTimeout,
-                            it.value.headers?.map { header ->
-                                BackupSettingsDownloadConversionHeaderType(
-                                    header.key,
-                                    header.value,
-                                )
-                            },
-                        )
-                    }
-                },
-                restoreLegacy = { backupValue ->
-                    @Suppress("UNCHECKED_CAST")
-                    (backupValue as? List<BackupSettingsDownloadConversionType>)?.associate {
-                        it.mimeType to
-                            DownloadConversion(
-                                target = it.target,
-                                compressionLevel = it.compressionLevel,
-                                callTimeout = it.callTimeout,
-                                connectTimeout = it.connectTimeout,
-                                headers = it.headers?.associate { header ->
-                                    header.name to header.value
-                                },
-                            )
-                    }
-                },
-            ),
+        typeInfo = downloadConversionTypeInfo(includeRestoreLegacy = true),
         internalType = "Map<String, DownloadConversion>",
     )
 

@@ -55,6 +55,7 @@ import suwayomi.tachidesk.server.settings.SettingGroup
 import suwayomi.tachidesk.server.settings.SettingsRegistry
 import suwayomi.tachidesk.server.settings.StringSetting
 import suwayomi.tachidesk.server.util.Platform
+import suwayomi.tachidesk.server.util.downloadConversionTypeInfo
 import uy.kohesive.injekt.injectLazy
 import xyz.nulldev.ts.config.GlobalConfigManager
 import xyz.nulldev.ts.config.SystemPropertyOverridableConfigModule
@@ -641,72 +642,7 @@ class ServerConfig(
         excludeFromBackup = true,
     )
 
-    private fun downloadConversionTypeInfo() = SettingsRegistry.PartialTypeInfo(
-        specificType = "List<SettingsDownloadConversionType>",
-        interfaceType = "List<SettingsDownloadConversion>",
-        backupType = "List<BackupSettingsDownloadConversionType>",
-        imports =
-            listOf(
-                "suwayomi.tachidesk.manga.impl.backup.proto.models.BackupSettingsDownloadConversionType",
-            ),
-        convertToGqlType = { value ->
-            @Suppress("UNCHECKED_CAST")
-            val castedValue = value as Map<String, DownloadConversion>
 
-            castedValue.map {
-                SettingsDownloadConversionType(
-                    it.key,
-                    it.value.target,
-                    it.value.compressionLevel,
-                    it.value.callTimeout,
-                    it.value.connectTimeout,
-                    it.value.headers?.map { header ->
-                        SettingsDownloadConversionHeaderType(
-                            header.key,
-                            header.value,
-                        )
-                    },
-                )
-            }
-        },
-        convertToInternalType = { list ->
-            @Suppress("UNCHECKED_CAST")
-            val castedList = list as List<SettingsDownloadConversionType>
-
-            castedList.associate {
-                it.mimeType to
-                    DownloadConversion(
-                        target = it.target,
-                        compressionLevel = it.compressionLevel,
-                        callTimeout = it.callTimeout,
-                        connectTimeout = it.connectTimeout,
-                        headers = it.headers?.associate { header ->
-                            header.name to header.value
-                        },
-                    )
-            }
-        },
-        convertToBackupType = { value ->
-            @Suppress("UNCHECKED_CAST")
-            val castedValue = value as Map<String, DownloadConversion>
-
-            castedValue.map {
-                BackupSettingsDownloadConversionType(
-                    it.key,
-                    it.value.target,
-                    it.value.compressionLevel,
-                    it.value.callTimeout,
-                    it.value.connectTimeout,
-                    it.value.headers?.map { header ->
-                        BackupSettingsDownloadConversionHeaderType(
-                            header.key,
-                            header.value,
-                        )
-                    },
-                )
-            }
-        },
-    )
     fun createDownloadConversionsMap(
         protoNumber: Int,
         key: String,
@@ -1057,7 +993,7 @@ class ServerConfig(
         group = SettingGroup.DOWNLOADER,
         privacySafe = false,
         defaultValue = emptyMap(),
-        typeInfo = downloadConversionTypeInfo()
+        typeInfo = downloadConversionTypeInfo(),
     )
 
     val useHikariConnectionPool: MutableStateFlow<Boolean> by BooleanSetting(

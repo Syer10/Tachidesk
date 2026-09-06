@@ -182,6 +182,7 @@ class DownloadMutation {
     )
 
     @RequireAuth
+    @RequirePermissions(UserPermission.DOWNLOAD_CHAPTERS)
     fun dequeueChapterDownloads(
         @GraphQLIgnore
         userId: Int,
@@ -224,6 +225,7 @@ class DownloadMutation {
     )
 
     @RequireAuth
+    @RequirePermissions(UserPermission.DOWNLOAD_CHAPTERS)
     fun dequeueChapterDownload(
         @GraphQLIgnore
         userId: Int,
@@ -265,6 +267,7 @@ class DownloadMutation {
     )
 
     @RequireAuth
+    @RequirePermissions(UserPermission.DOWNLOAD_CHAPTERS)
     fun startDownloader(input: StartDownloaderInput): CompletableFuture<StartDownloaderPayload?> =
         future {
             DownloadManager.start()
@@ -292,6 +295,7 @@ class DownloadMutation {
     )
 
     @RequireAuth
+    @RequirePermissions(UserPermission.DOWNLOAD_CHAPTERS)
     fun stopDownloader(input: StopDownloaderInput): CompletableFuture<StopDownloaderPayload?> =
         future {
             DownloadManager.stop()
@@ -319,6 +323,7 @@ class DownloadMutation {
     )
 
     @RequireAuth
+    @RequirePermissions(UserPermission.DOWNLOAD_CHAPTERS)
     fun clearDownloader(input: ClearDownloaderInput): CompletableFuture<ClearDownloaderPayload?> =
         future {
             DownloadManager.clear()
@@ -348,6 +353,7 @@ class DownloadMutation {
     )
 
     @RequireAuth
+    @RequirePermissions(UserPermission.DOWNLOAD_CHAPTERS)
     fun reorderChapterDownload(input: ReorderChapterDownloadInput): CompletableFuture<ReorderChapterDownloadPayload?> {
         val (clientMutationId, chapter, to) = input
 
@@ -374,6 +380,7 @@ class DownloadMutation {
     )
 
     @RequireAuth
+    @RequirePermissions(UserPermission.DOWNLOAD_CHAPTERS)
     fun reorderChapterDownloads(input: ReorderChapterDownloadsInput): CompletableFuture<ReorderChapterDownloadPayload?> {
         val (clientMutationId, reorders) = input
 

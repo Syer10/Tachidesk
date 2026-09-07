@@ -71,7 +71,6 @@ Accounts are granted fine-grained permissions. The `ADMIN` role (user `1`) bypas
 | `INSTALL_EXTERNAL_EXTENSIONS` | Installing untrusted extensions (`installExternalExtension`) |
 | `UNINSTALL_EXTENSIONS` | Uninstalling extensions |
 | `DOWNLOAD_CHAPTERS` | Enqueueing chapter downloads |
-| `ACCESS_NSFW` | Viewing/fetching NSFW sources and extensions |
 | `MANAGE_SETTINGS` | Reading (real values) / writing global server settings; including server settings in backup exports and applying them on backup restore |
 | `MANAGE_USERS` | Registering users, listing users, granting/revoking permissions, setting roles, issuing user codes |
 | `MANAGE_EXTENSION_STORES` | Adding/removing extension stores |
@@ -87,10 +86,9 @@ INSTALL_EXTENSIONS
 INSTALL_EXTERNAL_EXTENSIONS
 UNINSTALL_EXTENSIONS
 DOWNLOAD_CHAPTERS
-ACCESS_NSFW
 ```
 
-This means a self-registered user can install **untrusted** `.jar` extensions and can view **NSFW** content. This is intentional (it matches the reader's expected capabilities) but it is a deliberate security choice: in a multi-user deployment, treat all accounts as trusted with respect to extension installation and NSFW access. An admin can trim or expand an account's grants with the `updateUser` mutation.
+This means a self-registered user can install **untrusted** `.jar` extensions. This is intentional (it matches the reader's expected capabilities) but it is a deliberate security choice: in a multi-user deployment, treat all accounts as trusted with respect to extension installation. An admin can trim or expand an account's grants with the `updateUser` mutation.
 
 An admin can change an account's permissions and role with `updateUser` (requires `MANAGE_USERS`):
 
@@ -148,8 +146,7 @@ Users **with** `MANAGE_SETTINGS` (including the `ADMIN` role) see and write the 
 
 The following are **not** handled by the multi-user work (documented so they are not mistaken for bugs):
 
-- **NSFW checks on content-fetch operations** (`fetchManga` / `fetchMangaAndChapters`, `fetchChapters` / `fetchChapterPages`) are not enforced. NSFW is enforced on the source/extension surface (lists and singular lookups) and on `fetchSourceManga`.
-- **page-image and CBZ endpoints** serve content without an ownership/NSFW check; a non-NSFW user could read page content of NSFW manga another user added.
+- **page-image and CBZ endpoints** serve content without an ownership check; a user could read page content of a manga another user added.
 - **Shared download queue control** (`start`/`stop`/`clear`/`reorder`/`dequeue`) operates on the shared queue and is not per-user gated.
 - **`updateStop`** cancels all users' library-update jobs (a per-user reset would be invasive); known limitation.
 - **Shared library-update status** — the `Updater` emits a single global status/updates stream, so all users see the same update progress (a consequence of the shared update queue).

@@ -47,9 +47,7 @@ import suwayomi.tachidesk.graphql.types.SourceType
 import suwayomi.tachidesk.manga.model.dataclass.ContentWarning
 import suwayomi.tachidesk.manga.model.table.SourceTable
 import suwayomi.tachidesk.server.JavalinSetup.future
-import suwayomi.tachidesk.server.user.ForbiddenException
 import suwayomi.tachidesk.server.user.UserPermission
-import suwayomi.tachidesk.server.user.hasPermission
 import java.util.concurrent.CompletableFuture
 
 class SourceQuery {
@@ -61,9 +59,9 @@ class SourceQuery {
         permissions: List<UserPermission>,
     ): CompletableFuture<SourceType> =
         dataFetchingEnvironment.getValueFromDataLoader<Long, SourceType>("SourceDataLoader", id).thenApply { source ->
-            if (source != null && source.contentWarning >= ContentWarning.MIXED && !permissions.hasPermission(UserPermission.ACCESS_NSFW)) {
-                throw ForbiddenException()
-            }
+            // if (source != null && source.contentWarning >= ContentWarning.MIXED && !permissions.hasPermission(UserPermission.ACCESS_NSFW)) {
+            //     throw ForbiddenException()
+            // }
             source
         }
 
@@ -182,9 +180,9 @@ class SourceQuery {
                     res.applyOps(condition, filter)
 
                     // hide NSFW sources from users without the NSFW permission
-                    if (!permissions.hasPermission(UserPermission.ACCESS_NSFW)) {
-                        res.andWhere { SourceTable.contentWarning less ContentWarning.MIXED.ordinal }
-                    }
+                    // if (!permissions.hasPermission(UserPermission.ACCESS_NSFW)) {
+                    //     res.andWhere { SourceTable.contentWarning less ContentWarning.MIXED.ordinal }
+                    // }
 
                     val baseSort = listOf(SourceOrder(SourceOrderBy.ID, SortOrder.ASC))
                     val deprecatedSort = listOfNotNull(orderBy?.let { SourceOrder(orderBy, orderByType) })

@@ -37,9 +37,7 @@ import suwayomi.tachidesk.manga.model.table.MangaTable
 import suwayomi.tachidesk.manga.model.table.SourceMetaTable
 import suwayomi.tachidesk.manga.model.table.SourceTable
 import suwayomi.tachidesk.server.JavalinSetup.future
-import suwayomi.tachidesk.server.user.ForbiddenException
 import suwayomi.tachidesk.server.user.UserPermission
-import suwayomi.tachidesk.server.user.hasPermission
 import java.util.concurrent.CompletableFuture
 
 class SourceMutation {
@@ -307,9 +305,9 @@ class SourceMutation {
                         ?: false
                 }
 
-            if (isSourceNsfw && !permissions.hasPermission(UserPermission.ACCESS_NSFW)) {
-                throw ForbiddenException()
-            }
+            // if (isSourceNsfw && !permissions.hasPermission(UserPermission.ACCESS_NSFW)) {
+            //     throw ForbiddenException()
+            // }
 
             val source = GetSource.getSourceOrNull(sourceId)!!
             val mangasPage =

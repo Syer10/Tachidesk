@@ -391,7 +391,7 @@ object OpdsV1Controller {
             behaviorOf = { ctx, sourceId, pageNumber, sort, lang ->
                 val user = ctx.getAttribute(Attribute.TachideskUser)
                 val userId = user.requireUserWithBasicFallback(ctx)
-                val includeNsfw = user.hasPermission(UserPermission.ACCESS_NSFW)
+                // val includeNsfw = user.hasPermission(UserPermission.ACCESS_NSFW)
                 val locale: Locale = LocalizationHelper.ctxToLocale(ctx, lang)
                 ctx.future {
                     future {
@@ -402,7 +402,7 @@ object OpdsV1Controller {
                             sourceId,
                             pageNumber ?: 1,
                             sort ?: "popular",
-                            includeNsfw,
+                            true, // includeNsfw,
                         )
                     }.thenApply { xml ->
                         ctx.contentType(OPDS_MIME).result(xml)

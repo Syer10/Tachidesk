@@ -10,6 +10,7 @@ import suwayomi.tachidesk.server.settings.UserSettingsRegistry
 import suwayomi.tachidesk.server.settings.asMap
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.user.UserSettingsValidator
 
 class UserSettingsMutation {
     data class SetUserSettingsInput(
@@ -43,6 +44,11 @@ class UserSettingsMutation {
         // Ensure all UserSetting descriptors are registered in UserSettingsRegistry before looking them up;
         // otherwise an uninitialized registry would silently drop every field
         userConfig
+
+        val validationErrors = UserSettingsValidator.validate(settings, true)
+        if (validationErrors.isNotEmpty()) {
+            throw Exception("Validation errors: ${validationErrors.joinToString("; ")}")
+        }
 
         settings
             .asMap()

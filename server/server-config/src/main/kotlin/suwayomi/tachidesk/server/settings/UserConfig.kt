@@ -33,7 +33,7 @@ class UserSetting<T : Any>(
     val group: SettingGroup,
     val type: KClass<*>,
     val defaultValue: T,
-    val validator: ((T) -> String?)? = null,
+    val validator: ((Any?) -> String?)? = null,
     val typeInfo: SettingsRegistry.PartialTypeInfo? = null,
     val internalType: String? = null,
     val typeArguments: Map<String, ClassContainer> = emptyMap(),
@@ -77,7 +77,13 @@ private inline fun <reified T : Any> userSetting(
         group = group,
         defaultValue = defaultValue,
         type = T::class,
-        validator = validator,
+        validator =
+            validator?.let { validate ->
+                { value ->
+                    @Suppress("UNCHECKED_CAST")
+                    validate(value as T)
+                }
+            },
         typeInfo = typeInfo,
         internalType = internalType,
         typeArguments = T::class.typeParameters.mapIndexed { index, parameter ->

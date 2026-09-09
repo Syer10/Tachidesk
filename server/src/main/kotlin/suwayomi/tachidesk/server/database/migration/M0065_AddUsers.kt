@@ -143,9 +143,7 @@ class M0065_AddUsers : Migration() {
             ALTER TABLE $table
                 ADD CONSTRAINT UC_$table UNIQUE ($groupBy);
 
-            """.also {
-                println(it)
-            }
+            """
         }
 
         private val metaTableMigrations: String =

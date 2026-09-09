@@ -200,7 +200,11 @@ object UserSettings {
  */
 val userSettings: UserSettings = UserSettings
 
-
 fun <T : Any> UserSetting<T>.value(userId: Int): T = UserSettings.value(userId, this)
+
 fun <T : Any> UserSetting<T>.flow(userId: Int): Flow<T> = UserSettings.flow(userId, this)
-fun <T : Any> UserSetting<T>.set(userId: Int, value: T): Unit = UserSettings.set(userId, this, value)
+
+fun <T : Any> UserSetting<T>.set(
+    userId: Int,
+    value: T,
+): Unit = UserSettings.set(userId, this, value)

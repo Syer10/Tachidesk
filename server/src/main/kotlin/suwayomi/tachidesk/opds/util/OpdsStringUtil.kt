@@ -1,7 +1,6 @@
 package suwayomi.tachidesk.opds.util
 
 import suwayomi.tachidesk.server.settings.userConfig
-import suwayomi.tachidesk.server.settings.userSettings
 import suwayomi.tachidesk.server.settings.value
 import java.net.URLEncoder
 import java.text.Normalizer

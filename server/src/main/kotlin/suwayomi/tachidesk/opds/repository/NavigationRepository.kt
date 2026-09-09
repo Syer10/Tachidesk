@@ -33,7 +33,6 @@ import suwayomi.tachidesk.opds.dto.OpdsStatusNavEntry
 import suwayomi.tachidesk.opds.util.OpdsStringUtil.encodeForOpdsURL
 import suwayomi.tachidesk.opds.util.OpdsStringUtil.formatSourceName
 import suwayomi.tachidesk.server.settings.userConfig
-import suwayomi.tachidesk.server.settings.userSettings
 import suwayomi.tachidesk.server.settings.value
 import java.util.Locale
 

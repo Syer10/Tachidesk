@@ -43,7 +43,6 @@ import suwayomi.tachidesk.opds.dto.OpdsSearchCriteria
 import suwayomi.tachidesk.opds.dto.PrimaryFilterType
 import suwayomi.tachidesk.opds.util.OpdsStringUtil.formatSourceName
 import suwayomi.tachidesk.server.settings.userConfig
-import suwayomi.tachidesk.server.settings.userSettings
 import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.server.user.ForbiddenException
 

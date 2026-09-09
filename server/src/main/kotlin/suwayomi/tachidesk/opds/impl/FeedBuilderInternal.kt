@@ -8,7 +8,6 @@ import suwayomi.tachidesk.opds.model.OpdsFeedXml
 import suwayomi.tachidesk.opds.model.OpdsLinkXml
 import suwayomi.tachidesk.opds.util.OpdsDateUtil
 import suwayomi.tachidesk.server.settings.userConfig
-import suwayomi.tachidesk.server.settings.userSettings
 import suwayomi.tachidesk.server.settings.value
 import java.util.Locale
 import kotlin.math.ceil

@@ -39,7 +39,6 @@ import suwayomi.tachidesk.opds.dto.OpdsChapterMetadataAcqEntry
 import suwayomi.tachidesk.opds.dto.OpdsHistoryAcqEntry
 import suwayomi.tachidesk.opds.dto.OpdsLibraryUpdateAcqEntry
 import suwayomi.tachidesk.server.settings.userConfig
-import suwayomi.tachidesk.server.settings.userSettings
 import suwayomi.tachidesk.server.settings.value
 
 object ChapterRepository {

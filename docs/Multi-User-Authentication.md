@@ -40,14 +40,18 @@ There are three ways to create an account. All require the `MANAGE_USERS` permis
 
 ### 1. Admin registers a user directly
 
-Use the `register` mutation (requires `MANAGE_USERS`). The new account gets the default permissions and the `USER` role.
+Use the `register` mutation (requires `MANAGE_USERS`). The new account gets the `USER` role and, by default, the default permissions.
+
+The optional `userPermissions` input overrides the permission set for the new account: when provided (non-null), the account is granted exactly the listed permissions — an empty list creates an account with no permissions at all. When omitted, the default set applies (see [Default permissions for new accounts](#default-permissions-for-new-accounts)).
 
 ### 2. Registration codes (controlled self-signup)
 
 An admin issues a one-time registration code with `createRegistrationCode` (requires `MANAGE_USERS`). The code is returned in plaintext exactly once and is handed to the user out-of-band.
 
+The optional `permissions` input binds a permission set to the code: when provided (non-null), the account created on redemption is granted exactly the listed permissions — an empty list creates an account with no permissions at all. When omitted, the account gets the default set (see [Default permissions for new accounts](#default-permissions-for-new-accounts)).
+
 - A registration code is valid for **7 days**.
-- Anyone (even a logged-out visitor) can redeem it with the `redeemRegistrationCode` mutation by providing the code, a chosen username, and a chosen password. This creates the account (default permissions + `USER` role) and returns a JWT so the user is logged in immediately.
+- Anyone (even a logged-out visitor) can redeem it with the `redeemRegistrationCode` mutation by providing the code, a chosen username, and a chosen password. This creates the account (`USER` role, plus the permission set bound to the code or the defaults if none) and returns a JWT so the user is logged in immediately.
 - Registration codes may stack (an admin can issue several). An admin can list outstanding codes (`userCodes`) and revoke any of them (`revokeUserCode`).
 
 ### 3. Recovery codes (password recovery)
@@ -79,7 +83,7 @@ Accounts are granted fine-grained permissions. The `ADMIN` role (user `1`) bypas
 
 ### Default permissions for new accounts
 
-**Important security posture:** a newly created account (via `register` or a registration code) is granted, by default:
+**Important security posture:** a newly created account (via `register` or a registration code) is granted, by default — that is, when no explicit permission set is provided: `register` called without `userPermissions`, or a registration code created without `permissions`:
 
 ```
 INSTALL_EXTENSIONS

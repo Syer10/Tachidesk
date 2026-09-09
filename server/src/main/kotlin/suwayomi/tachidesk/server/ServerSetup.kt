@@ -30,6 +30,8 @@ import kotlinx.coroutines.runBlocking
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.cef.network.CefCookieManager
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.lowerCase
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 import org.koin.core.context.startKoin
@@ -75,6 +77,7 @@ import java.net.Authenticator
 import java.net.PasswordAuthentication
 import java.security.Security
 import java.util.Locale
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
@@ -493,15 +496,34 @@ fun applicationSetup() {
             )
         },
         onChange = { settings ->
-            transaction {
-                UserAccountTable.update({ UserAccountTable.id eq 1 }) {
-                    it[UserAccountTable.username] =
-                        settings.authUsername.trim().ifEmpty { "admin" }
-                    it[UserAccountTable.password] =
-                        Bcrypt.encryptPassword(
-                            settings.authPassword.trim().ifEmpty { "password" },
-                        )
+            try {
+                transaction {
+                    val usernameSetting = settings.authUsername.trim().ifEmpty { "admin" }
+
+                    val username =
+                        if (
+                            UserAccountTable
+                                .select(UserAccountTable.id)
+                                .where { UserAccountTable.username.lowerCase() eq usernameSetting.lowercase() }
+                                .empty()
+                        ) {
+                            usernameSetting
+                        } else {
+                            val username = usernameSetting + Random.nextInt(9999)
+                            logger.warn { "Username taken, username now `$username`" }
+                            username
+                        }
+
+                    UserAccountTable.update({ UserAccountTable.id eq 1 }) {
+                        it[UserAccountTable.username] = username
+                        it[UserAccountTable.password] =
+                            Bcrypt.encryptPassword(
+                                settings.authPassword.trim().ifEmpty { "password" },
+                            )
+                    }
                 }
+            } catch (e: Exception) {
+                logger.error(e) { "Unable to update admin username" }
             }
         },
         ignoreInitialValue = false,

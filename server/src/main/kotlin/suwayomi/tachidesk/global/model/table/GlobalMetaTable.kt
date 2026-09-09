@@ -16,5 +16,9 @@ import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 object GlobalMetaTable : IntIdTable() {
     val key = varchar("meta_key", 256)
     val value = varchar("value", 4096)
-    val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE)
+    val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE).index()
+
+    init {
+        uniqueIndex(user, key)
+    }
 }

@@ -19,4 +19,8 @@ object SourceMetaTable : IntIdTable() {
     val value = varchar("value", 4096)
     val ref = long("source_ref")
     val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE)
+
+    init {
+        uniqueIndex(user, ref, key)
+    }
 }

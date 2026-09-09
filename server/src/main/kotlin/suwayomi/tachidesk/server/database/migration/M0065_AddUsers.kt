@@ -141,7 +141,7 @@ class M0065_AddUsers : Migration() {
                 DROP CONSTRAINT UC_$table;
 
             ALTER TABLE $table
-                ADD CONSTRAINT UC_$table UNIQUE ($groupBy);
+                ADD CONSTRAINT UC_${table}_UNIQUE UNIQUE ($groupBy);
 
             """
         }
@@ -398,19 +398,30 @@ class M0065_AddUsers : Migration() {
 
             -- Add foreign key constraints to reference USER table
             ALTER TABLE $categoryTable ADD CONSTRAINT FK_CATEGORY_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
+            CREATE INDEX IDX_CATEGORY_USER_ID ON $categoryTable(USER_ID);
             ALTER TABLE $tractRecordTable ADD CONSTRAINT FK_TRACKRECORD_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
+            CREATE INDEX IDX_TRACKRECORD_USER_ID ON $tractRecordTable(USER_ID);
+            ALTER TABLE $tractRecordTable ADD CONSTRAINT UC_TRACKRECORD_UNIQUE UNIQUE (USER_ID, MANGA_ID);
 
             -- Create default category marker
             ALTER TABLE $categoryTable ADD COLUMN IS_DEFAULT_CATEGORY BOOLEAN NOT NULL DEFAULT FALSE;
             UPDATE $categoryTable SET IS_DEFAULT_CATEGORY = TRUE WHERE ID = 0 AND USER_ID = 1;
             $categoryDefaultCategoryIndexDdl
+            
+            ALTER TABLE $categoryMangaTable ADD CONSTRAINT FK_CATEGORYMANGA_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
+            ALTER TABLE $categoryMangaTable DROP CONSTRAINT UC_CATEGORYMANGA;
+            ALTER TABLE $categoryMangaTable ADD CONSTRAINT UC_CATEGORYMANGA_UNIQUE UNIQUE (USER_ID, CATEGORY, MANGA);
 
             ALTER TABLE $mangaMetaTable ADD CONSTRAINT FK_MANGAMETA_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
+            CREATE INDEX IDX_MANGAMETA_USER_ID ON $mangaMetaTable(USER_ID);
             ALTER TABLE $chapterMetaTable ADD CONSTRAINT FK_CHAPTERMETA_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
-            ALTER TABLE $categoryMangaTable ADD CONSTRAINT FK_CATEGORYMANGA_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
+            CREATE INDEX IDX_CHAPTERMETA_USER_ID ON $chapterMetaTable(USER_ID);
             ALTER TABLE $globalMetaTable ADD CONSTRAINT FK_GLOBALMETA_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
+            CREATE INDEX IDX_GLOBALMETA_USER_ID ON $globalMetaTable(USER_ID);
             ALTER TABLE $categoryMetaTable ADD CONSTRAINT FK_CATEGORYMETA_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
+            CREATE INDEX IDX_CATEGORYMETA_USER_ID ON $categoryMetaTable(USER_ID);
             ALTER TABLE $sourceMetaTable ADD CONSTRAINT FK_SOURCEMETA_USER_ID FOREIGN KEY (USER_ID) REFERENCES $userAccountTable(ID) ON DELETE CASCADE;
+            CREATE INDEX IDX_SOURCEMETA_USER_ID ON $sourceMetaTable(USER_ID);
 
 
             ALTER TABLE $categoryTable
@@ -532,13 +543,21 @@ class M0065_AddUsers : Migration() {
     }
 
     private object UserPermissionsTable : Table() {
-        val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE)
+        val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE).index()
         val permission = varchar("permission", 128)
+
+        init {
+            uniqueIndex(user, permission)
+        }
     }
 
     private object UserRolesTable : Table() {
-        val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE)
+        val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE).index()
         val role = varchar("role", 24)
+
+        init {
+            uniqueIndex(user, role)
+        }
     }
 
     private object MangaTable : IntIdTable()
@@ -554,6 +573,10 @@ class M0065_AddUsers : Migration() {
         val version = long("version").default(0)
         val isSyncing = bool("is_syncing").default(false)
         val lastModifiedAt = long("last_modified_at").default(0)
+
+        init {
+            uniqueIndex(manga, user)
+        }
     }
 
     private object ChapterTable : IntIdTable()
@@ -572,10 +595,14 @@ class M0065_AddUsers : Migration() {
         val version = long("version").default(0)
         val isSyncing = bool("is_syncing").default(false)
         val lastModifiedAt = long("last_modified_at").default(0)
+
+        init {
+            uniqueIndex(chapter, user)
+        }
     }
 
     private object UserSettingsTable : Table() {
-        val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE)
+        val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE).index()
         val key = varchar("key", 256)
         val value = varchar("value", 16384)
 

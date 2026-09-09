@@ -30,4 +30,8 @@ object MangaMetaTable : IntIdTable() {
     val value = varchar("value", 4096)
     val ref = reference("manga_ref", MangaTable, ReferenceOption.CASCADE)
     val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE)
+
+    init {
+        uniqueIndex(user, ref, key)
+    }
 }

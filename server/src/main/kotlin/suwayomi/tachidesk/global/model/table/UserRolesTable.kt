@@ -11,6 +11,10 @@ import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.core.Table
 
 object UserRolesTable : Table() {
-    val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE)
+    val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE).index()
     val role = varchar("role", 24)
+
+    init {
+        index(isUnique = true, user, role)
+    }
 }

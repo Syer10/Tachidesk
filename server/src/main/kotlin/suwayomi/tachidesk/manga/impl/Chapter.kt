@@ -54,6 +54,7 @@ import suwayomi.tachidesk.manga.model.table.getWithUserData
 import suwayomi.tachidesk.manga.model.table.toDataClass
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import java.time.Instant
 import java.util.TreeSet
 import kotlin.math.max
@@ -451,12 +452,12 @@ object Chapter {
                     "prevLatestChapterNumber= $prevLatestChapterNumber, " +
                     "prevNumberOfChapters= $prevNumberOfChapters, " +
                     "newChapters= ${newChapters.size}, " +
-                    "autoDownloadNewChaptersLimit= ${userSettings.value(userId, userConfig.autoDownloadNewChaptersLimit)}, " +
-                    "autoDownloadIgnoreReUploads= ${userSettings.value(userId, userConfig.autoDownloadIgnoreReUploads)}" +
+                    "autoDownloadNewChaptersLimit= ${userConfig.autoDownloadNewChaptersLimit.value(userId)}, " +
+                    "autoDownloadIgnoreReUploads= ${userConfig.autoDownloadIgnoreReUploads.value(userId)}" +
                     ")",
             )
 
-        if (!userSettings.value(userId, userConfig.autoDownloadNewChapters)) {
+        if (!userConfig.autoDownloadNewChapters.value(userId)) {
             log.debug { "automatic download is not configured" }
             return
         }
@@ -478,7 +479,7 @@ object Chapter {
 
         val unreadChapters = Manga.getUnreadChapters(userId, mangaId).subtract(newChapters.toSet())
 
-        val skipDueToUnreadChapters = userSettings.value(userId, userConfig.excludeEntryWithUnreadChapters) && unreadChapters.isNotEmpty()
+        val skipDueToUnreadChapters = userConfig.excludeEntryWithUnreadChapters.value(userId) && unreadChapters.isNotEmpty()
         if (skipDueToUnreadChapters) {
             log.debug { "ignore due to unread chapters" }
             return
@@ -504,17 +505,17 @@ object Chapter {
         val reUploadedChapters = newChapters.filter { it.chapterNumber < prevLatestChapterNumber }
         val actualNewChapters = newChapters.subtract(reUploadedChapters.toSet()).toList()
         val chaptersToConsiderForDownloadLimit =
-            if (userSettings.value(userId, userConfig.autoDownloadIgnoreReUploads)) {
+            if (userConfig.autoDownloadIgnoreReUploads.value(userId)) {
                 if (actualNewChapters.isNotEmpty()) actualNewChapters.removeDuplicates(actualNewChapters[0]) else emptyList()
             } else {
                 newChapters.removeDuplicates(newChapters[0])
             }.sortedBy { it.index }
 
         val latestChapterToDownloadIndex =
-            if (userSettings.value(userId, userConfig.autoDownloadNewChaptersLimit) == 0) {
+            if (userConfig.autoDownloadNewChaptersLimit.value(userId) == 0) {
                 chaptersToConsiderForDownloadLimit.size
             } else {
-                userSettings.value(userId, userConfig.autoDownloadNewChaptersLimit).coerceIn(0, chaptersToConsiderForDownloadLimit.size)
+                userConfig.autoDownloadNewChaptersLimit.value(userId).coerceIn(0, chaptersToConsiderForDownloadLimit.size)
             }
         val limitedChaptersToDownload = chaptersToConsiderForDownloadLimit.subList(0, latestChapterToDownloadIndex)
         val limitedChaptersToDownloadWithDuplicates =

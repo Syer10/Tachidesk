@@ -42,7 +42,9 @@ object UserSettingsBackupHandlerGenerator {
                     "suwayomi.tachidesk.manga.impl.backup.proto.models.BackupUserSettings",
                     "suwayomi.tachidesk.server.settings.UserSettingsRegistry",
                     "suwayomi.tachidesk.server.settings.userConfig",
+                    "suwayomi.tachidesk.server.settings.set",
                     "suwayomi.tachidesk.server.settings.userSettings",
+                    "suwayomi.tachidesk.server.settings.value",
                 ),
                 settings,
             ),
@@ -100,13 +102,13 @@ object UserSettingsBackupHandlerGenerator {
             )
             if (needsConversion) {
                 appendLine(
-                    "userSettings.set(userId, userConfig.${setting.key}, UserSettingsRegistry.get(\"${setting.key}\")!!.typeInfo!!.restoreLegacy!!(it) as ${setting.internalType ?: setting.type.simpleName})".addIndentation(
+                    "userConfig.${setting.key}.set(userId, UserSettingsRegistry.get(\"${setting.key}\")!!.typeInfo!!.restoreLegacy!!(it) as ${setting.internalType ?: setting.type.simpleName})".addIndentation(
                         contentIndentation * 2,
                     ),
                 )
             } else {
                 appendLine(
-                    "userSettings.set(userId, userConfig.${setting.key}, it)".addIndentation(
+                    "userConfig.${setting.key}.set(userId, it)".addIndentation(
                         contentIndentation * 2,
                     ),
                 )
@@ -137,11 +139,11 @@ object UserSettingsBackupHandlerGenerator {
     private fun getConfigAccess(setting: UserSetting<*>): String {
         if (setting.typeInfo?.convertToBackupType != null) {
             return "UserSettingsRegistry.get(\"${setting.key}\")!!.typeInfo!!.convertToBackupType!!(" +
-                "userSettings.value(userId, userConfig.${setting.key})" +
+                "userConfig.${setting.key}.value(userId)" +
                 ") as? ${getBackupType(setting)}"
         }
 
-        return "userSettings.value(userId, userConfig.${setting.key})"
+        return "userConfig.${setting.key}.value(userId)"
     }
 
     private fun getBackupType(setting: UserSetting<*>): String =

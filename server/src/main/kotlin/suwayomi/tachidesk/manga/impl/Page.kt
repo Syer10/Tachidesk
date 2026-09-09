@@ -30,6 +30,7 @@ import suwayomi.tachidesk.manga.model.table.PageTable
 import suwayomi.tachidesk.server.serverConfig
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.util.ConversionUtil
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -155,7 +156,7 @@ object Page {
                 chapterIndex = chapterIndex,
                 index = index,
             )
-        val conversions = userSettings.value(userId, userConfig.serveConversions)
+        val conversions = userConfig.serveConversions.value(userId)
         val defaultConversion = conversions["default"]
         val formatConversion = format?.let { DownloadConversion(target = it) }
         val conversion =

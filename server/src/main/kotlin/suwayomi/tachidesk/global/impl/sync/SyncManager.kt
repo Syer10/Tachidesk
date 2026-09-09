@@ -48,8 +48,10 @@ import suwayomi.tachidesk.manga.model.table.MangaTable
 import suwayomi.tachidesk.manga.model.table.MangaUserTable
 import suwayomi.tachidesk.manga.model.table.getWithUserData
 import suwayomi.tachidesk.manga.model.table.toDataClass
+import suwayomi.tachidesk.server.settings.flow
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.server.subscribeTo
 import suwayomi.tachidesk.util.HAScheduler
 import uy.kohesive.injekt.Injekt
@@ -160,8 +162,8 @@ object SyncManager {
             return
         }
 
-        val enabledFlow = userSettings.flow(userId, userConfig.syncYomiEnabled)
-        val intervalFlow = userSettings.flow(userId, userConfig.syncInterval)
+        val enabledFlow = userConfig.syncYomiEnabled.flow(userId)
+        val intervalFlow = userConfig.syncInterval.flow(userId)
 
         userConfigSubscriptions[userId] =
             subscribeTo(
@@ -240,7 +242,7 @@ object SyncManager {
         userId: Int,
         periodic: Boolean = false,
     ): StartSyncResult {
-        if (!userSettings.value(userId, userConfig.syncYomiEnabled)) {
+        if (!userConfig.syncYomiEnabled.value(userId)) {
             return StartSyncResult.SYNC_DISABLED
         }
 
@@ -261,7 +263,7 @@ object SyncManager {
     }
 
     suspend fun ensureSync(userId: Int) {
-        if (!userSettings.value(userId, userConfig.syncYomiEnabled)) {
+        if (!userConfig.syncYomiEnabled.value(userId)) {
             return
         }
 
@@ -321,11 +323,11 @@ object SyncManager {
 
             val backupFlags =
                 BackupFlags(
-                    includeManga = userSettings.value(userId, userConfig.syncDataManga),
-                    includeCategories = userSettings.value(userId, userConfig.syncDataCategories),
-                    includeChapters = userSettings.value(userId, userConfig.syncDataChapters),
-                    includeTracking = userSettings.value(userId, userConfig.syncDataTracking),
-                    includeHistory = userSettings.value(userId, userConfig.syncDataHistory),
+                    includeManga = userConfig.syncDataManga.value(userId),
+                    includeCategories = userConfig.syncDataCategories.value(userId),
+                    includeChapters = userConfig.syncDataChapters.value(userId),
+                    includeTracking = userConfig.syncDataTracking.value(userId),
+                    includeHistory = userConfig.syncDataHistory.value(userId),
                     includeClientData = false,
                     includeServerSettings = false,
                     includeUserSettings = false,
@@ -426,7 +428,7 @@ object SyncManager {
                 return
             }
 
-            if (userSettings.value(userId, userConfig.syncDataCategories)) {
+            if (userConfig.syncDataCategories.value(userId)) {
                 val mergedUids = newSyncData.backupCategories.map { it.uid }.toSet()
                 val mergedNames = newSyncData.backupCategories.map { it.name }.toSet()
                 val localCategories = Category.getCategoryList(userId).filterNot { it.isDefaultCategory } // Exclude system category

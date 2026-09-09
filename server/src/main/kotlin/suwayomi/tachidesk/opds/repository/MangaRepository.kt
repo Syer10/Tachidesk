@@ -44,6 +44,7 @@ import suwayomi.tachidesk.opds.dto.PrimaryFilterType
 import suwayomi.tachidesk.opds.util.OpdsStringUtil.formatSourceName
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.server.user.ForbiddenException
 
 /**
@@ -114,7 +115,7 @@ fun Query.applyOpdsMangaFilter(
  * Repository for fetching manga data tailored for OPDS feeds.
  */
 object MangaRepository {
-    private fun opdsItemsPerPage(userId: Int): Int = userSettings.value(userId, userConfig.opdsItemsPerPage)
+    private fun opdsItemsPerPage(userId: Int): Int = userConfig.opdsItemsPerPage.value(userId)
 
     /**
      * Maps a database [ResultRow] to an [OpdsMangaAcqEntry] data transfer object.

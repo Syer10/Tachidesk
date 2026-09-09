@@ -62,11 +62,11 @@ class UserSettingsTest : ApplicationTest() {
     fun valueFallsBackToDefault() {
         assertEquals(
             userConfig.opdsItemsPerPage.defaultValue,
-            userSettings.value(userId, userConfig.opdsItemsPerPage),
+            userConfig.opdsItemsPerPage.value(userId),
         )
         assertEquals(
             userConfig.excludeUnreadChapters.defaultValue,
-            userSettings.value(userId, userConfig.excludeUnreadChapters),
+            userConfig.excludeUnreadChapters.value(userId),
         )
     }
 
@@ -74,7 +74,7 @@ class UserSettingsTest : ApplicationTest() {
     fun setCreatesOverride() {
         userSettings.set(userId, userConfig.opdsItemsPerPage, 250)
 
-        assertEquals(250, userSettings.value(userId, userConfig.opdsItemsPerPage))
+        assertEquals(250, userConfig.opdsItemsPerPage.value(userId))
 
         val stored =
             transaction {
@@ -91,10 +91,10 @@ class UserSettingsTest : ApplicationTest() {
     fun perUserIsolation() {
         userSettings.set(userId, userConfig.opdsItemsPerPage, 250)
 
-        assertEquals(250, userSettings.value(userId, userConfig.opdsItemsPerPage))
+        assertEquals(250, userConfig.opdsItemsPerPage.value(userId))
         assertEquals(
             userConfig.opdsItemsPerPage.defaultValue,
-            userSettings.value(userId2, userConfig.opdsItemsPerPage),
+            userConfig.opdsItemsPerPage.value(userId2),
         )
     }
 
@@ -106,7 +106,7 @@ class UserSettingsTest : ApplicationTest() {
 
         assertEquals(
             userConfig.opdsItemsPerPage.defaultValue,
-            userSettings.value(userId, userConfig.opdsItemsPerPage),
+            userConfig.opdsItemsPerPage.value(userId),
         )
 
         val rows =
@@ -128,11 +128,11 @@ class UserSettingsTest : ApplicationTest() {
 
         assertEquals(
             userConfig.opdsItemsPerPage.defaultValue,
-            userSettings.value(userId, userConfig.opdsItemsPerPage),
+            userConfig.opdsItemsPerPage.value(userId),
         )
         assertEquals(
             userConfig.excludeUnreadChapters.defaultValue,
-            userSettings.value(userId, userConfig.excludeUnreadChapters),
+            userConfig.excludeUnreadChapters.value(userId),
         )
 
         val rows =
@@ -154,7 +154,7 @@ class UserSettingsTest : ApplicationTest() {
         // The invalid value must not have been stored
         assertEquals(
             userConfig.opdsItemsPerPage.defaultValue,
-            userSettings.value(userId, userConfig.opdsItemsPerPage),
+            userConfig.opdsItemsPerPage.value(userId),
         )
     }
 
@@ -195,7 +195,7 @@ class UserSettingsTest : ApplicationTest() {
 
         userSettings.set(userId, userConfig.serveConversions, conversions)
 
-        assertConversionsEqual(conversions, userSettings.value(userId, userConfig.serveConversions))
+        assertConversionsEqual(conversions, userConfig.serveConversions.value(userId))
     }
 
     @Test

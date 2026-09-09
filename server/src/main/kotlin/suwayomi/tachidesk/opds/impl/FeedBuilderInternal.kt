@@ -9,6 +9,7 @@ import suwayomi.tachidesk.opds.model.OpdsLinkXml
 import suwayomi.tachidesk.opds.util.OpdsDateUtil
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import java.util.Locale
 import kotlin.math.ceil
 
@@ -47,7 +48,7 @@ class FeedBuilderInternal(
     }
 
     fun build(): OpdsFeedXml {
-        val itemsPerPage = userSettings.value(userId, userConfig.opdsItemsPerPage)
+        val itemsPerPage = userConfig.opdsItemsPerPage.value(userId)
         val showOpenSearch = isSearchFeed && pageNum != null && totalResults > 0
         val urnSuffix =
             listOfNotNull(

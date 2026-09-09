@@ -30,6 +30,7 @@ import suwayomi.tachidesk.manga.model.table.MangaTable
 import suwayomi.tachidesk.manga.model.table.getWithUserData
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.server.util.Platform
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -144,7 +145,7 @@ object KoreaderSyncService {
 
             val mangaId = chapterRow[ChapterTable.manga].value
             val isDownloaded = chapterRow[ChapterUserTable.isDownloaded]
-            val checksumMethod = userSettings.value(userId, userConfig.koreaderSyncChecksumMethod)
+            val checksumMethod = userConfig.koreaderSyncChecksumMethod.value(userId)
 
             val newHash =
                 when (checksumMethod) {
@@ -367,8 +368,8 @@ object KoreaderSyncService {
         userId: Int,
         chapterId: Int,
     ) {
-        val forwardStrategy = userSettings.value(userId, userConfig.koreaderSyncStrategyForward)
-        val backwardStrategy = userSettings.value(userId, userConfig.koreaderSyncStrategyBackward)
+        val forwardStrategy = userConfig.koreaderSyncStrategyForward.value(userId)
+        val backwardStrategy = userConfig.koreaderSyncStrategyBackward.value(userId)
 
         // if both directions keep remote, is in receive-only mode, so don't push.
         if (forwardStrategy == KoreaderSyncConflictStrategy.KEEP_REMOTE &&
@@ -445,8 +446,8 @@ object KoreaderSyncService {
         userId: Int,
         chapterId: Int,
     ): SyncResult? {
-        val forwardStrategy = userSettings.value(userId, userConfig.koreaderSyncStrategyForward)
-        val backwardStrategy = userSettings.value(userId, userConfig.koreaderSyncStrategyBackward)
+        val forwardStrategy = userConfig.koreaderSyncStrategyForward.value(userId)
+        val backwardStrategy = userConfig.koreaderSyncStrategyBackward.value(userId)
 
         // Skip remote fetch if both directions disabled OR both keep local (no remote data needed)
         if ((forwardStrategy == KoreaderSyncConflictStrategy.DISABLED && backwardStrategy == KoreaderSyncConflictStrategy.DISABLED) ||
@@ -515,7 +516,7 @@ object KoreaderSyncService {
                         val percentageDifference = abs(localPercentage - (progressResponse.percentage ?: 0f))
 
                         // Progress is within tolerance, no sync needed
-                        if (percentageDifference < userSettings.value(userId, userConfig.koreaderSyncPercentageTolerance)) {
+                        if (percentageDifference < userConfig.koreaderSyncPercentageTolerance.value(userId)) {
                             return null
                         }
 

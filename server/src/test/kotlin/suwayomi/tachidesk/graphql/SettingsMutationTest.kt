@@ -10,6 +10,7 @@ import suwayomi.tachidesk.global.model.table.UserSettingsTable
 import suwayomi.tachidesk.server.serverConfig
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.server.user.UserPermission
 import suwayomi.tachidesk.server.user.UserType
 import suwayomi.tachidesk.test.GraphQLTest
@@ -164,7 +165,7 @@ class SettingsMutationTest : GraphQLTest() {
         response.assertNoErrors()
         assertEquals(
             false,
-            userSettings.value(userId, userConfig.excludeUnreadChapters),
+            userConfig.excludeUnreadChapters.value(userId),
             "the per-user-moved setting should be applied to the caller's user settings",
         )
     }
@@ -174,7 +175,7 @@ class SettingsMutationTest : GraphQLTest() {
         val (userId, user) = viewerUser()
 
         userSettings.set(userId, userConfig.excludeUnreadChapters, false)
-        assertEquals(false, userSettings.value(userId, userConfig.excludeUnreadChapters))
+        assertEquals(false, userConfig.excludeUnreadChapters.value(userId))
 
         val response =
             graphql(
@@ -192,7 +193,7 @@ class SettingsMutationTest : GraphQLTest() {
         response.assertNoErrors()
         assertEquals(
             true,
-            userSettings.value(userId, userConfig.excludeUnreadChapters),
+            userConfig.excludeUnreadChapters.value(userId),
             "the per-user-moved setting should be reset to its default",
         )
     }

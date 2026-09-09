@@ -48,6 +48,7 @@ import suwayomi.tachidesk.manga.model.table.MangaUserTable
 import suwayomi.tachidesk.server.serverConfig
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.util.HAScheduler
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -338,7 +339,7 @@ class Updater : IUpdater {
         // user with this manga has it enabled. For user-triggered updates, the triggering user's setting applies.
         val updateManga =
             if (job.userId != null) {
-                userSettings.value(job.userId, userConfig.updateMangas) || !job.manga.initialized
+                userConfig.updateMangas.value(job.userId) || !job.manga.initialized
             } else {
                 anyUserWantsMangaUpdate(job.manga.id) || !job.manga.initialized
             }
@@ -413,19 +414,19 @@ class Updater : IUpdater {
                     .asSequence()
                     .filter { it.updateStrategy == UpdateStrategy.ALWAYS_UPDATE }
                     .filter {
-                        if (userSettings.value(userId, userConfig.excludeUnreadChapters)) {
+                        if (userConfig.excludeUnreadChapters.value(userId)) {
                             (it.unreadCount ?: 0L) == 0L
                         } else {
                             true
                         }
                     }.filter {
-                        if (it.initialized && userSettings.value(userId, userConfig.excludeNotStarted)) {
+                        if (it.initialized && userConfig.excludeNotStarted.value(userId)) {
                             it.lastReadAt != null
                         } else {
                             true
                         }
                     }.filter {
-                        if (userSettings.value(userId, userConfig.excludeCompleted)) {
+                        if (userConfig.excludeCompleted.value(userId)) {
                             it.status != MangaStatus.COMPLETED.name
                         } else {
                             true

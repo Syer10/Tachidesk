@@ -24,6 +24,7 @@ import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupManga
 import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupSource
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -147,8 +148,8 @@ object SyncYomiSyncService {
         setSyncState: (SyncManager.SyncState) -> Unit,
     ): SyncResult {
         val backup = syncData.backup ?: return SyncResult(null, changed = false, protocolV2 = true)
-        val host = userSettings.value(userId, userConfig.syncYomiHost)
-        val apiKey = userSettings.value(userId, userConfig.syncYomiApiKey)
+        val host = userConfig.syncYomiHost.value(userId)
+        val apiKey = userConfig.syncYomiApiKey.value(userId)
 
         val pendingDeleted = pendingDeletedCategories(userId)
         val headers =
@@ -216,12 +217,12 @@ object SyncYomiSyncService {
     }
 
     suspend fun supportsV2(userId: Int): Boolean {
-        val host = userSettings.value(userId, userConfig.syncYomiHost)
+        val host = userConfig.syncYomiHost.value(userId)
         if (syncPreferences.getString("${PREF_V2_PROBED_HOST}_$userId", null) == host) {
             return syncPreferences.getBoolean("${PREF_V2_SUPPORTED}_$userId", false)
         }
 
-        val apiKey = userSettings.value(userId, userConfig.syncYomiApiKey)
+        val apiKey = userConfig.syncYomiApiKey.value(userId)
         val request = GET(url = "$host/api/sync/v2/capabilities", headers = baseHeaders(apiKey, userId).build())
         val response = network.client.newCall(request).await()
         response.close()
@@ -253,7 +254,7 @@ object SyncYomiSyncService {
         userId: Int,
         uid: Long,
     ) {
-        if (uid == 0L || !userSettings.value(userId, userConfig.syncYomiEnabled)) return
+        if (uid == 0L || !userConfig.syncYomiEnabled.value(userId)) return
         syncPreferences
             .edit()
             .putStringSet("${PREF_PENDING_DELETED_CATEGORIES}_$userId", pendingDeletedCategories(userId) + uid.toString())
@@ -282,8 +283,8 @@ object SyncYomiSyncService {
             .build()
 
     private suspend fun pullSyncData(userId: Int): Pair<SyncData?, String> {
-        val host = userSettings.value(userId, userConfig.syncYomiHost)
-        val apiKey = userSettings.value(userId, userConfig.syncYomiApiKey)
+        val host = userConfig.syncYomiHost.value(userId)
+        val apiKey = userConfig.syncYomiApiKey.value(userId)
         val downloadUrl = "$host/api/sync/content"
 
         val headersBuilder = baseHeaders(apiKey, userId)
@@ -344,8 +345,8 @@ object SyncYomiSyncService {
     ): Boolean {
         val backup = syncData.backup ?: return true
 
-        val host = userSettings.value(userId, userConfig.syncYomiHost)
-        val apiKey = userSettings.value(userId, userConfig.syncYomiApiKey)
+        val host = userConfig.syncYomiHost.value(userId)
+        val apiKey = userConfig.syncYomiApiKey.value(userId)
         val uploadUrl = "$host/api/sync/content"
 
         val headersBuilder = baseHeaders(apiKey, userId)
@@ -398,8 +399,8 @@ object SyncYomiSyncService {
         message: String? = null,
     ) {
         try {
-            val host = userSettings.value(userId, userConfig.syncYomiHost)
-            val apiKey = userSettings.value(userId, userConfig.syncYomiApiKey)
+            val host = userConfig.syncYomiHost.value(userId)
+            val apiKey = userConfig.syncYomiApiKey.value(userId)
             val url = "$host/api/sync/event"
 
             val headers = baseHeaders(apiKey, userId).build()
@@ -506,7 +507,7 @@ object SyncYomiSyncService {
             )
 
         val lastSyncTime = syncPreferences.getLong("last_sync_timestamp_$userId", 0).milliseconds.inWholeSeconds
-        val syncingChapters = userSettings.value(userId, userConfig.syncDataChapters)
+        val syncingChapters = userConfig.syncDataChapters.value(userId)
 
         val mergedList =
             (localMangaMap.keys + remoteMangaMap.keys).distinct().mapNotNull { compositeKey ->

@@ -2,6 +2,7 @@ package suwayomi.tachidesk.opds.util
 
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import java.net.URLEncoder
 import java.text.Normalizer
 
@@ -58,7 +59,7 @@ object OpdsStringUtil {
         userId: Int,
         size: Long,
     ): String =
-        if (userSettings.value(userId, userConfig.opdsUseBinaryFileSizes)) {
+        if (userConfig.opdsUseBinaryFileSizes.value(userId)) {
             // Binary notation (base 1024)
             when {
                 // 1024^4

@@ -31,6 +31,7 @@ import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupUserSettings
 import suwayomi.tachidesk.server.settings.UserSettingsRegistry
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.test.ApplicationTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -107,16 +108,16 @@ class BackupUserSettingsTest : ApplicationTest() {
         BackupUserSettingsHandler.restore(userB, backup, null)
 
         // B receives A's effective values as its own overrides
-        assertEquals(250, userSettings.value(userB, userConfig.opdsItemsPerPage))
-        assertEquals(true, userSettings.value(userB, userConfig.excludeUnreadChapters))
+        assertEquals(250, userConfig.opdsItemsPerPage.value(userB))
+        assertEquals(true, userConfig.excludeUnreadChapters.value(userB))
         assertEquals(
             userConfig.opdsChapterSortOrder.defaultValue,
-            userSettings.value(userB, userConfig.opdsChapterSortOrder),
+            userConfig.opdsChapterSortOrder.value(userB),
         )
 
         // A is unaffected
-        assertEquals(250, userSettings.value(userA, userConfig.opdsItemsPerPage))
-        assertEquals(true, userSettings.value(userA, userConfig.excludeUnreadChapters))
+        assertEquals(250, userConfig.opdsItemsPerPage.value(userA))
+        assertEquals(true, userConfig.excludeUnreadChapters.value(userA))
 
         // B actually has override rows stored (one per exported setting)
         val rows =
@@ -143,17 +144,17 @@ class BackupUserSettingsTest : ApplicationTest() {
         BackupUserSettingsHandler.restore(userC, null, legacy)
 
         // The old global values become the importing user's per-user overrides
-        assertEquals(300, userSettings.value(userC, userConfig.opdsItemsPerPage))
-        assertEquals(true, userSettings.value(userC, userConfig.excludeUnreadChapters))
+        assertEquals(300, userConfig.opdsItemsPerPage.value(userC))
+        assertEquals(true, userConfig.excludeUnreadChapters.value(userC))
         assertEquals(
             KoreaderSyncChecksumMethod.FILENAME,
-            userSettings.value(userC, userConfig.koreaderSyncChecksumMethod),
+            userConfig.koreaderSyncChecksumMethod.value(userC),
         )
 
         // Settings absent from the legacy backup stay on the global fallback
         assertEquals(
             userConfig.opdsChapterSortOrder.defaultValue,
-            userSettings.value(userC, userConfig.opdsChapterSortOrder),
+            userConfig.opdsChapterSortOrder.value(userC),
         )
     }
 

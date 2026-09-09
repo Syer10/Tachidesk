@@ -31,6 +31,7 @@ import suwayomi.tachidesk.server.JavalinSetup.future
 import suwayomi.tachidesk.server.JavalinSetup.getAttribute
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.server.user.requireUser
 import suwayomi.tachidesk.server.user.requireUserWithBasicFallback
 import suwayomi.tachidesk.server.util.formParam
@@ -533,7 +534,7 @@ object MangaController {
             behaviorOf = { ctx, chapterId, markAsRead ->
                 val userId = ctx.getAttribute(Attribute.TachideskUser).requireUser()
                 ctx.disableCompression()
-                val contentType = userSettings.value(userId, userConfig.opdsCbzMimetype).mediaType
+                val contentType = userConfig.opdsCbzMimetype.value(userId).mediaType
                 if (ctx.method() == HandlerType.HEAD) {
                     ctx.future {
                         future { ChapterDownloadHelper.getCbzMetadataForDownload(chapterId) }

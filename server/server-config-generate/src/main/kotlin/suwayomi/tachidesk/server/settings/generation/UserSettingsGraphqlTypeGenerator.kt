@@ -40,6 +40,7 @@ object UserSettingsGraphqlTypeGenerator {
                     "suwayomi.tachidesk.server.settings.UserSettingsRegistry",
                     "suwayomi.tachidesk.server.settings.userConfig",
                     "suwayomi.tachidesk.server.settings.userSettings as globalUserSettings",
+                    "suwayomi.tachidesk.server.settings.value",
                 ),
                 settings,
             ),
@@ -147,10 +148,10 @@ object UserSettingsGraphqlTypeGenerator {
     private fun getConfigAccess(setting: UserSetting<*>): String {
         if (setting.typeInfo?.convertToGqlType != null) {
             return "UserSettingsRegistry.get(\"${setting.key}\")!!.typeInfo!!.convertToGqlType!!(" +
-                "userSettings.value(userId, userConfig.${setting.key})" +
+                "userConfig.${setting.key}.value(userId)" +
                 ") as ${getGraphQLType(setting, false)}"
         }
 
-        return "userSettings.value(userId, userConfig.${setting.key})"
+        return "userConfig.${setting.key}.value(userId)"
     }
 }

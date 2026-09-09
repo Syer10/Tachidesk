@@ -12,6 +12,7 @@ import suwayomi.tachidesk.graphql.types.DownloadConversion
 import suwayomi.tachidesk.server.ApplicationDirs
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.test.ApplicationTest
 import uy.kohesive.injekt.injectLazy
 import xyz.nulldev.ts.config.GlobalConfigManager
@@ -94,13 +95,13 @@ class UserSettingsBackfillTest : ApplicationTest() {
         saveUserSettingsBackfillFile(applicationDirs)
         applyUserSettingsBackfillFile(applicationDirs)
 
-        assertEquals(true, userSettings.value(1, userConfig.autoDownloadNewChapters))
-        assertEquals(250, userSettings.value(1, userConfig.opdsItemsPerPage))
-        assertEquals(SortOrder.ASC, userSettings.value(1, userConfig.opdsChapterSortOrder))
-        assertEquals(12.hours, userSettings.value(1, userConfig.syncInterval))
-        assertEquals("https://sync.example.com", userSettings.value(1, userConfig.syncYomiHost))
+        assertEquals(true, userConfig.autoDownloadNewChapters.value(1))
+        assertEquals(250, userConfig.opdsItemsPerPage.value(1))
+        assertEquals(SortOrder.ASC, userConfig.opdsChapterSortOrder.value(1))
+        assertEquals(12.hours, userConfig.syncInterval.value(1))
+        assertEquals("https://sync.example.com", userConfig.syncYomiHost.value(1))
 
-        val conversions = userSettings.value(1, userConfig.serveConversions)
+        val conversions = userConfig.serveConversions.value(1)
         assertEquals(setOf("image/webp"), conversions.keys)
         assertEquals("image/jpeg", conversions.getValue("image/webp").target)
         assertEquals(mapOf("X-Test" to "value"), conversions.getValue("image/webp").headers)
@@ -148,7 +149,7 @@ class UserSettingsBackfillTest : ApplicationTest() {
 
         assertEquals(
             userConfig.opdsItemsPerPage.defaultValue,
-            userSettings.value(1, userConfig.opdsItemsPerPage),
+            userConfig.opdsItemsPerPage.value(1),
         )
         val rows =
             transaction {
@@ -171,7 +172,7 @@ class UserSettingsBackfillTest : ApplicationTest() {
         applyUserSettingsBackfillFile(applicationDirs)
         applyUserSettingsBackfillFile(applicationDirs)
 
-        assertEquals(false, userSettings.value(1, userConfig.excludeNotStarted))
-        assertEquals(150, userSettings.value(1, userConfig.opdsItemsPerPage))
+        assertEquals(false, userConfig.excludeNotStarted.value(1))
+        assertEquals(150, userConfig.opdsItemsPerPage.value(1))
     }
 }

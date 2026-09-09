@@ -25,6 +25,7 @@ import suwayomi.tachidesk.global.model.table.UserAccountTable
 import suwayomi.tachidesk.graphql.types.StartSyncResult
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.test.ApplicationTest
 import suwayomi.tachidesk.util.HAScheduler
 import uy.kohesive.injekt.Injekt
@@ -134,8 +135,8 @@ class SyncManagerTest : ApplicationTest() {
         // Enable sync for user A only (a per-user override); user B keeps the global (disabled) fallback
         userSettings.set(userId, userConfig.syncYomiEnabled, true)
 
-        assertEquals(true, userSettings.value(userId, userConfig.syncYomiEnabled))
-        assertEquals(false, userSettings.value(userId2, userConfig.syncYomiEnabled))
+        assertEquals(true, userConfig.syncYomiEnabled.value(userId))
+        assertEquals(false, userConfig.syncYomiEnabled.value(userId2))
 
         // User B's sync is still disabled
         assertEquals(StartSyncResult.SYNC_DISABLED, SyncManager.startSync(userId2))

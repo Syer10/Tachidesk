@@ -46,6 +46,7 @@ object SettingsGraphqlTypeGenerator {
                     "suwayomi.tachidesk.server.settings.UserSettingsRegistry",
                     "suwayomi.tachidesk.server.settings.userConfig",
                     "suwayomi.tachidesk.server.settings.userSettings",
+                    "suwayomi.tachidesk.server.settings.value",
                 ),
                 settings,
             ),
@@ -159,11 +160,11 @@ object SettingsGraphqlTypeGenerator {
             if (userSetting.typeInfo?.convertToGqlType != null) {
                 appendLine(
                     ("UserSettingsRegistry.get(\"${setting.name}\")!!.typeInfo!!.convertToGqlType!!(" +
-                        "userSettings.value(userId, userConfig.${setting.name})) as $gqlType,").addIndentation(indentation),
+                        "userConfig.${setting.name}.value(userId)) as $gqlType,").addIndentation(indentation),
                 )
             } else {
                 appendLine(
-                    "userSettings.value(userId, userConfig.${setting.name}),".addIndentation(indentation),
+                    "userConfig.${setting.name}.value(userId),".addIndentation(indentation),
                 )
             }
             return
@@ -215,11 +216,11 @@ object SettingsGraphqlTypeGenerator {
                     if (userSetting.typeInfo?.convertToGqlType != null) {
                         appendLine(
                             ("UserSettingsRegistry.get(\"${setting.name}\")!!.typeInfo!!.convertToGqlType!!(" +
-                                "userSettings.value(userId, userConfig.${setting.name})) as $gqlType,").addIndentation(indentation),
+                                "userConfig.${setting.name}.value(userId)) as $gqlType,").addIndentation(indentation),
                         )
                     } else {
                         appendLine(
-                            "userSettings.value(userId, userConfig.${setting.name}),".addIndentation(indentation),
+                            "userConfig.${setting.name}.value(userId),".addIndentation(indentation),
                         )
                     }
                     return

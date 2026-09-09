@@ -40,9 +40,10 @@ import suwayomi.tachidesk.opds.dto.OpdsHistoryAcqEntry
 import suwayomi.tachidesk.opds.dto.OpdsLibraryUpdateAcqEntry
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 
 object ChapterRepository {
-    private fun opdsItemsPerPage(userId: Int): Int = userSettings.value(userId, userConfig.opdsItemsPerPage)
+    private fun opdsItemsPerPage(userId: Int): Int = userConfig.opdsItemsPerPage.value(userId)
 
     private val logger = KotlinLogging.logger {}
 
@@ -80,7 +81,7 @@ object ChapterRepository {
                     "unread" -> conditions.add(ChapterUserTable.isRead eq false or (ChapterUserTable.isRead.isNull()))
                     "read" -> conditions.add(ChapterUserTable.isRead eq true)
                 }
-                if (userSettings.value(userId, userConfig.opdsShowOnlyDownloadedChapters)) {
+                if (userConfig.opdsShowOnlyDownloadedChapters.value(userId)) {
                     conditions.add(ChapterUserTable.isDownloaded eq true)
                 }
 

@@ -21,6 +21,7 @@ import suwayomi.tachidesk.opds.util.OpdsDateUtil
 import suwayomi.tachidesk.opds.util.OpdsXmlUtil
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import java.util.Locale
 
 /**
@@ -98,7 +99,7 @@ object OpdsFeedBuilder {
                 pageNum = pageNum,
             )
         builder.totalResults = total
-        val skipMetadata = userSettings.value(userId, userConfig.opdsSkipChapterMetadataFeed)
+        val skipMetadata = userConfig.opdsSkipChapterMetadataFeed.value(userId)
         builder.entries.addAll(
             historyItems.map { item ->
                 val mangaDetails =
@@ -385,7 +386,7 @@ object OpdsFeedBuilder {
                 pageNum = pageNum,
                 currentSort = sort,
             )
-        val itemsPerPage = userSettings.value(userId, userConfig.opdsItemsPerPage)
+        val itemsPerPage = userConfig.opdsItemsPerPage.value(userId)
         builder.totalResults =
             if (hasNextPage) {
                 (pageNum * itemsPerPage + 1).toLong()
@@ -611,7 +612,7 @@ object OpdsFeedBuilder {
                 pageNum = pageNum,
             )
         builder.totalResults = total
-        val skipMetadata = userSettings.value(userId, userConfig.opdsSkipChapterMetadataFeed)
+        val skipMetadata = userConfig.opdsSkipChapterMetadataFeed.value(userId)
         builder.entries.addAll(
             updateItems.map { item ->
                 val mangaDetails =
@@ -664,11 +665,11 @@ object OpdsFeedBuilder {
                 "desc", "number_desc" -> ChapterTable.sourceOrder to SortOrder.DESC
                 "date_asc" -> ChapterTable.date_upload to SortOrder.ASC
                 "date_desc" -> ChapterTable.date_upload to SortOrder.DESC
-                else -> ChapterTable.sourceOrder to (userSettings.value(userId, userConfig.opdsChapterSortOrder))
+                else -> ChapterTable.sourceOrder to (userConfig.opdsChapterSortOrder.value(userId))
             }
         val currentFilter =
-            filterParam?.lowercase() ?: if (userSettings.value(userId, userConfig.opdsShowOnlyUnreadChapters)) "unread" else "all"
-        val skipMetadata = userSettings.value(userId, userConfig.opdsSkipChapterMetadataFeed)
+            filterParam?.lowercase() ?: if (userConfig.opdsShowOnlyUnreadChapters.value(userId)) "unread" else "all"
+        val skipMetadata = userConfig.opdsSkipChapterMetadataFeed.value(userId)
         var (chapterEntries, totalChapters) =
             ChapterRepository.getChaptersForManga(
                 userId,

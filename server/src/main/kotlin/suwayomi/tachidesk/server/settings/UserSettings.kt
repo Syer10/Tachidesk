@@ -4,6 +4,7 @@ import com.typesafe.config.ConfigFactory
 import io.github.config4k.ClassContainer
 import io.github.config4k.readers.SelectReader
 import io.github.config4k.toConfig
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -198,3 +199,8 @@ object UserSettings {
  * Top-level accessor for the [UserSettings] store (mirrors [suwayomi.tachidesk.server.serverConfig]).
  */
 val userSettings: UserSettings = UserSettings
+
+
+fun <T : Any> UserSetting<T>.value(userId: Int): T = UserSettings.value(userId, this)
+fun <T : Any> UserSetting<T>.flow(userId: Int): Flow<T> = UserSettings.flow(userId, this)
+fun <T : Any> UserSetting<T>.set(userId: Int, value: T): Unit = UserSettings.set(userId, this, value)

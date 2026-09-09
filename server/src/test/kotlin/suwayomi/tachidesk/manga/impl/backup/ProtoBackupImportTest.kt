@@ -23,6 +23,7 @@ import suwayomi.tachidesk.manga.impl.backup.proto.models.BackupUserSettings
 import suwayomi.tachidesk.server.serverConfig
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import suwayomi.tachidesk.test.ApplicationTest
 import java.io.ByteArrayInputStream
 import kotlin.test.Test
@@ -127,7 +128,7 @@ class ProtoBackupImportTest : ApplicationTest() {
 
                 assertEquals(
                     false,
-                    userSettings.value(userId, userConfig.excludeUnreadChapters),
+                    userConfig.excludeUnreadChapters.value(userId),
                     "the legacy global value should become the importing user's override",
                 )
             } finally {

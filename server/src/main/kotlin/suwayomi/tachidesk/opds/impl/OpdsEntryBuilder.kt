@@ -24,6 +24,7 @@ import suwayomi.tachidesk.opds.util.OpdsDateUtil
 import suwayomi.tachidesk.opds.util.OpdsStringUtil.formatFileSizeForOpds
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
+import suwayomi.tachidesk.server.settings.value
 import java.util.Locale
 
 /**
@@ -241,11 +242,8 @@ object OpdsEntryBuilder {
                 links.add(
                     OpdsLinkXml(
                         OpdsConstants.LINK_REL_ACQUISITION_OPEN_ACCESS,
-                        "/api/v1/chapter/${chapter.id}/download?markAsRead=${userSettings.value(
-                            userId,
-                            userConfig.opdsMarkAsReadOnDownload,
-                        )}",
-                        userSettings.value(userId, userConfig.opdsCbzMimetype).mediaType,
+                        "/api/v1/chapter/${chapter.id}/download?markAsRead=${userConfig.opdsMarkAsReadOnDownload.value(userId)}",
+                        userConfig.opdsCbzMimetype.value(userId).mediaType,
                         MR.strings.opds_linktitle_download_cbz.localized(locale),
                         length = chapter.cbzFileSize,
                     ),
@@ -256,7 +254,7 @@ object OpdsEntryBuilder {
             if (chapter.pageCount > 0) {
                 val basePageHref =
                     "/api/v1/manga/${manga.id}/chapter/${chapter.sourceOrder}/page/{pageNumber}" +
-                        "?updateProgress=${userSettings.value(userId, userConfig.opdsEnablePageReadProgress)}&opds=true"
+                        "?updateProgress=${userConfig.opdsEnablePageReadProgress.value(userId)}&opds=true"
 
                 val titleRes =
                     if (effectiveLastPageRead > 0) {
@@ -459,8 +457,8 @@ object OpdsEntryBuilder {
             links.add(
                 OpdsLinkXml(
                     OpdsConstants.LINK_REL_ACQUISITION_OPEN_ACCESS,
-                    "/api/v1/chapter/${chapter.id}/download?markAsRead=${userSettings.value(userId, userConfig.opdsMarkAsReadOnDownload)}",
-                    userSettings.value(userId, userConfig.opdsCbzMimetype).mediaType,
+                    "/api/v1/chapter/${chapter.id}/download?markAsRead=${userConfig.opdsMarkAsReadOnDownload.value(userId)}",
+                    userConfig.opdsCbzMimetype.value(userId).mediaType,
                     MR.strings.opds_linktitle_download_cbz.localized(locale),
                     length = cbzFileSize,
                 ),
@@ -469,7 +467,7 @@ object OpdsEntryBuilder {
         if (chapter.pageCount > 0) {
             val basePageHref =
                 "/api/v1/manga/${manga.id}/chapter/${chapter.sourceOrder}/page/{pageNumber}" +
-                    "?updateProgress=${userSettings.value(userId, userConfig.opdsEnablePageReadProgress)}&opds=true"
+                    "?updateProgress=${userConfig.opdsEnablePageReadProgress.value(userId)}&opds=true"
 
             val title: String =
                 when {

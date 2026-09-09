@@ -2,7 +2,7 @@
 
 Suwayomi supports a multi-user mode in which each person on the server has their own account, their own library, their own downloads, and their own per-user settings. This page explains how to enable it, how accounts work, and what the security posture is.
 
-Multi-user mode is gated by the `ui_login` authentication mode. In all other modes (`none`, `basic_auth`, `simple_login`) there is effectively a single admin account and the per-user features are inert.
+Multi-user mode is gated by the `ui_login` authentication mode. In all other modes (`none`, `basic_auth`, `simple_login`) there is effectively a single admin account and the per-user features are inactive.
 
 ## Enabling multi-user mode
 

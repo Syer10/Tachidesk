@@ -40,7 +40,7 @@ import kotlin.test.assertTrue
 class CategoryDefaultGqlTest : GraphQLTest() {
     private fun createUser(username: String): Int =
         transaction {
-            UserCodeService.createUser(username, "password")
+            UserCodeService.createUser(username, "password", null)
         }
 
     private fun userTypeOf(userId: Int): UserType = UserType.Admin(userId)

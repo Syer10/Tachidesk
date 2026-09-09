@@ -528,20 +528,6 @@ class M0065_AddUsers : Migration() {
         val sessionVersion = integer("session_version").default(0)
     }
 
-    private object UserCodeTable : IntIdTable() {
-        val user = reference("user_id", UserAccountTable.id, ReferenceOption.CASCADE).nullable()
-        val type = varchar("type", 32)
-        val codeHash = varchar("code_hash", 90)
-        val createdBy = integer("created_by").references(UserAccountTable.id)
-        val createdAt = long("created_at").default(0)
-        val expiresAt = long("expires_at").default(0)
-        val consumedAt = long("consumed_at").nullable()
-
-        init {
-            index(isUnique = false, user, type, consumedAt)
-        }
-    }
-
     private object UserPermissionsTable : Table() {
         val user = reference("user_id", UserAccountTable, ReferenceOption.CASCADE).index()
         val permission = varchar("permission", 128)
@@ -557,6 +543,30 @@ class M0065_AddUsers : Migration() {
 
         init {
             uniqueIndex(user, role)
+        }
+    }
+
+    private object UserCodeTable : IntIdTable() {
+        val user = reference("user_id", UserAccountTable.id, ReferenceOption.CASCADE).nullable()
+        val type = varchar("type", 32)
+        val codeHash = varchar("code_hash", 90)
+        val createdBy = integer("created_by").references(UserAccountTable.id)
+        val createdAt = long("created_at").default(0)
+        val expiresAt = long("expires_at").default(0)
+        val consumedAt = long("consumed_at").nullable()
+        val hasPermissions = bool("has_permissions").default(false)
+
+        init {
+            index(isUnique = false, user, type, consumedAt)
+        }
+    }
+
+    private object UserCodePermissionsTable : Table() {
+        val userCode = reference("user_code_id", UserCodeTable, ReferenceOption.CASCADE).index()
+        val permission = varchar("permission", 128)
+
+        init {
+            uniqueIndex(userCode, permission)
         }
     }
 
@@ -625,6 +635,7 @@ class M0065_AddUsers : Migration() {
                 MangaUserTable,
                 UserSettingsTable,
                 UserCodeTable,
+                UserCodePermissionsTable,
             )
             exec(sql)
             currentDialectMetadata.resetCaches()

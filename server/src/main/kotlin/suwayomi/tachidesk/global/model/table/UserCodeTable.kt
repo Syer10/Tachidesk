@@ -23,6 +23,7 @@ object UserCodeTable : IntIdTable() {
     val createdAt = long("created_at").default(0)
     val expiresAt = long("expires_at").default(0)
     val consumedAt = long("consumed_at").nullable()
+    val hasPermissions = bool("has_permissions").default(false)
 
     init {
         index(isUnique = false, user, type, consumedAt)

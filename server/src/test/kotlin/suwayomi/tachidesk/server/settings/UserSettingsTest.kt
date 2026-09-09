@@ -55,6 +55,7 @@ class UserSettingsTest : ApplicationTest() {
             UserCodeService.createUser(
                 username,
                 "password",
+                null,
             )
         }
 

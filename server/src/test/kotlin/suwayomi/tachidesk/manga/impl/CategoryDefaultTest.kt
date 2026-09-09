@@ -73,7 +73,7 @@ class CategoryDefaultTest : ApplicationTest() {
     private fun createUser(username: String): Int {
         val userId =
             transaction {
-                UserCodeService.createUser(username, "password")
+                UserCodeService.createUser(username, "password", null)
             }
         createdUserIds.add(userId)
         return userId

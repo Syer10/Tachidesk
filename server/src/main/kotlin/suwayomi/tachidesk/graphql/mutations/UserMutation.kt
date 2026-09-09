@@ -99,6 +99,7 @@ class UserMutation {
         val clientMutationId: String? = null,
         val username: String,
         val password: String,
+        val userPermissions: List<UserPermission>? = null,
     )
 
     data class RegisterPayload(
@@ -108,7 +109,7 @@ class UserMutation {
     @RequireAuth
     @RequirePermissions(UserPermission.MANAGE_USERS)
     fun register(input: RegisterInput): RegisterPayload {
-        val (clientMutationId, username, password) = input
+        val (clientMutationId, username, password, userPermissions) = input
 
         val userExists =
             transaction {
@@ -120,7 +121,7 @@ class UserMutation {
         if (userExists) {
             throw Exception("Username already exists")
         } else {
-            UserCodeService.createUser(username, password)
+            UserCodeService.createUser(username, password, userPermissions)
         }
 
         return RegisterPayload(
@@ -158,6 +159,7 @@ class UserMutation {
 
     data class CreateRegistrationCodeInput(
         val clientMutationId: String? = null,
+        val permissions: List<UserPermission>? = null,
     )
 
     data class CreateRegistrationCodePayload(
@@ -174,7 +176,7 @@ class UserMutation {
         userId: Int,
         input: CreateRegistrationCodeInput,
     ): CreateRegistrationCodePayload {
-        val issued = UserCodeService.createRegistrationCode(userId)
+        val issued = UserCodeService.createRegistrationCode(userId, input.permissions)
 
         return CreateRegistrationCodePayload(
             clientMutationId = input.clientMutationId,

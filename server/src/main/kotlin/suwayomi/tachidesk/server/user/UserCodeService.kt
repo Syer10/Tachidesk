@@ -21,6 +21,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 import suwayomi.tachidesk.global.impl.util.Bcrypt
 import suwayomi.tachidesk.global.model.table.UserAccountTable
+import suwayomi.tachidesk.global.model.table.UserCodePermissionsTable
 import suwayomi.tachidesk.global.model.table.UserCodeTable
 import suwayomi.tachidesk.global.model.table.UserPermissionsTable
 import suwayomi.tachidesk.global.model.table.UserRolesTable
@@ -128,18 +129,30 @@ object UserCodeService {
      *
      * Returns the plaintext code, which is never stored or returned again.
      */
-    fun createRegistrationCode(issuedBy: Int): IssuedCode =
+    fun createRegistrationCode(
+        issuedBy: Int,
+        userPermissions: List<UserPermission>?,
+    ): IssuedCode =
         transaction {
             val now = now()
             val code = generateCode()
             val expiresAt = now + REGISTRATION_TTL
 
-            UserCodeTable.insert {
-                it[UserCodeTable.type] = UserCodePurpose.REGISTRATION.name
-                it[UserCodeTable.codeHash] = Bcrypt.encryptPassword(code)
-                it[UserCodeTable.createdBy] = issuedBy
-                it[UserCodeTable.createdAt] = now.epochSeconds
-                it[UserCodeTable.expiresAt] = expiresAt.epochSeconds
+            val id =
+                UserCodeTable.insertAndGetId {
+                    it[UserCodeTable.type] = UserCodePurpose.REGISTRATION.name
+                    it[UserCodeTable.codeHash] = Bcrypt.encryptPassword(code)
+                    it[UserCodeTable.createdBy] = issuedBy
+                    it[UserCodeTable.createdAt] = now.epochSeconds
+                    it[UserCodeTable.expiresAt] = expiresAt.epochSeconds
+                    it[UserCodeTable.hasPermissions] = userPermissions != null
+                }
+
+            if (!userPermissions.isNullOrEmpty()) {
+                UserCodePermissionsTable.batchInsert(userPermissions) {
+                    this[UserCodePermissionsTable.userCode] = id
+                    this[UserCodePermissionsTable.permission] = it.name
+                }
             }
 
             IssuedCode(code = code, expiresAt = expiresAt.epochSeconds)
@@ -218,7 +231,21 @@ object UserCodeService {
             throw UserCodeRedemptionException()
         }
 
-        val userId = createUser(username, password)
+        val permissions =
+            if (match[UserCodeTable.hasPermissions]) {
+                transaction {
+                    UserCodePermissionsTable
+                        .selectAll()
+                        .where { UserCodePermissionsTable.userCode eq codeId }
+                        .mapNotNull { permission ->
+                            UserPermission.entries.find { it.name == permission[UserCodePermissionsTable.permission] }
+                        }
+                }
+            } else {
+                null
+            }
+
+        val userId = createUser(username, password, permissions)
 
         // backfill the code row with the new user for the audit trail
         transaction {
@@ -274,6 +301,7 @@ object UserCodeService {
     fun createUser(
         username: String,
         password: String,
+        permissions: List<UserPermission>?,
     ): Int {
         require(username.isNotBlank()) {
             "Username cannot be blank"
@@ -290,9 +318,12 @@ object UserCodeService {
                         it[UserAccountTable.password] = Bcrypt.encryptPassword(password)
                     }.value
 
-            UserPermissionsTable.batchInsert(UserPermission.defaultPermissions) {
-                this[UserPermissionsTable.user] = userId
-                this[UserPermissionsTable.permission] = it.name
+            val permissions = permissions ?: UserPermission.defaultPermissions
+            if (permissions.isNotEmpty()) {
+                UserPermissionsTable.batchInsert(permissions) {
+                    this[UserPermissionsTable.user] = userId
+                    this[UserPermissionsTable.permission] = it.name
+                }
             }
 
             UserRolesTable.insert {

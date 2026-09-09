@@ -13,13 +13,18 @@ import suwayomi.tachidesk.server.settings.UserSettingsRegistry
 import suwayomi.tachidesk.server.settings.userConfig
 import suwayomi.tachidesk.server.settings.userSettings
 import xyz.nulldev.ts.config.GlobalConfigManager
-import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.copyTo
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.writeText
 
 private val logger = KotlinLogging.logger {}
 
 const val USER_SETTINGS_BACKFILL_FILENAME = "userSettingsBackfill.json"
 
-private fun backfillFile(applicationDirs: ApplicationDirs) = File(applicationDirs.dataRoot, USER_SETTINGS_BACKFILL_FILENAME)
+private fun backfillFile(applicationDirs: ApplicationDirs) = Path(applicationDirs.dataRoot) / USER_SETTINGS_BACKFILL_FILENAME
 
 private fun allUserSettings(): Map<String, UserSetting<*>> {
     userConfig // touch the lazy so all per-user settings get registered
@@ -58,12 +63,12 @@ fun saveUserSettingsBackfillFile(applicationDirs: ApplicationDirs) {
     }
 
     val file = backfillFile(applicationDirs)
-    val tmpFile = File(file.parentFile, "$USER_SETTINGS_BACKFILL_FILENAME.tmp")
+    val tmpFile = file.parent / "$USER_SETTINGS_BACKFILL_FILENAME.tmp"
     tmpFile.writeText(
         ConfigFactory.parseMap(entries).root().render(ConfigRenderOptions.concise().setJson(true)),
     )
     tmpFile.copyTo(file, overwrite = true)
-    tmpFile.delete()
+    tmpFile.deleteExisting()
 
     logger.info { "Saved ${entries.size} user settings to $file" }
 }
@@ -85,7 +90,7 @@ fun applyUserSettingsBackfillFile(applicationDirs: ApplicationDirs) {
 
     val config =
         try {
-            ConfigFactory.parseFile(file)
+            ConfigFactory.parseFile(file.toFile())
         } catch (e: ConfigException) {
             logger.error(e) { "Failed to parse user settings backfill file $file; skipping user 1 settings backfill" }
             return
@@ -112,6 +117,8 @@ fun applyUserSettingsBackfillFile(applicationDirs: ApplicationDirs) {
             logger.error(e) { "Failed to apply backfilled value for setting $key; skipping" }
         }
     }
+
+    file.deleteExisting()
 
     logger.info { "Applied $applied user settings to user 1" }
 }

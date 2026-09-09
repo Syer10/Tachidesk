@@ -42,7 +42,18 @@ object UserSettings {
             val e = Entry<T>()
             val stored = readStored(userId, setting.key)
             val default = setting.defaultValue
-            e.flow = MutableStateFlow(if (stored != null) decode(stored, setting) else default)
+            val value =
+                if (stored != null) {
+                    val decoded = decode(stored, setting)
+                    if (setting.validator?.invoke(decoded) == null) {
+                        decoded
+                    } else {
+                        default
+                    }
+                } else {
+                    default
+                }
+            e.flow = MutableStateFlow(value)
             e
         } as Entry<T>
 

@@ -11,6 +11,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greater
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.jdbc.batchInsert
@@ -58,6 +59,7 @@ object UserCodeService {
         val createdBy: Int,
         val createdAt: Long,
         val expiresAt: Long,
+        val permissions: List<UserPermission>?,
     )
 
     private fun now(): Instant = Clock.System.now()
@@ -125,7 +127,9 @@ object UserCodeService {
         }
 
     /**
-     * Creates an unbound registration code.
+     * Creates a registration code. When [userPermissions] is non-null, that permission set is
+     * bound to the code and granted to the account created on redemption (an empty list grants
+     * no permissions); otherwise the account gets the default permissions.
      *
      * Returns the plaintext code, which is never stored or returned again.
      */
@@ -198,7 +202,8 @@ object UserCodeService {
 
     /**
      * Redeems a registration code with a username and a self-chosen password, creating the
-     * account with the default permissions and the USER role.
+     * account with the permission set bound to the code (or the default permissions when the
+     * code carries none) and the USER role.
      *
      * Returns the id of the newly created user.
      */
@@ -272,19 +277,51 @@ object UserCodeService {
             }
 
         return transaction {
-            UserCodeTable
-                .selectAll()
-                .where { where }
-                .map {
-                    OutstandingCode(
-                        id = it[UserCodeTable.id].value,
-                        purpose = UserCodePurpose.valueOf(it[UserCodeTable.type]),
-                        user = it[UserCodeTable.user]?.value,
-                        createdBy = it[UserCodeTable.createdBy],
-                        createdAt = it[UserCodeTable.createdAt],
-                        expiresAt = it[UserCodeTable.expiresAt],
-                    )
+            val rows =
+                UserCodeTable
+                    .selectAll()
+                    .where { where }
+                    .toList()
+
+            val codeIds = rows.map { it[UserCodeTable.id].value }
+
+            // Load the bound permission set for the codes that carry one, in a single query.
+            val permissionSets: Map<Int, List<UserPermission>> =
+                if (codeIds.isEmpty()) {
+                    emptyMap()
+                } else {
+                    UserCodePermissionsTable
+                        .selectAll()
+                        .where { UserCodePermissionsTable.userCode inList codeIds }
+                        .groupBy(
+                            { it[UserCodePermissionsTable.userCode].value },
+                            { row ->
+                                UserPermission.entries.find { it.name == row[UserCodePermissionsTable.permission] }
+                            },
+                        ).mapValues {
+                            it.value.filterNotNull()
+                        }
                 }
+
+            rows.map { row ->
+                val codeId = row[UserCodeTable.id].value
+                OutstandingCode(
+                    id = codeId,
+                    purpose = UserCodePurpose.valueOf(row[UserCodeTable.type]),
+                    user = row[UserCodeTable.user]?.value,
+                    createdBy = row[UserCodeTable.createdBy],
+                    createdAt = row[UserCodeTable.createdAt],
+                    expiresAt = row[UserCodeTable.expiresAt],
+                    // null = the code was created without a permission set (defaults apply);
+                    // an empty list = the code was created with no permissions.
+                    permissions =
+                        if (row[UserCodeTable.hasPermissions]) {
+                            permissionSets[codeId] ?: emptyList()
+                        } else {
+                            null
+                        },
+                )
+            }
         }
     }
 
@@ -296,7 +333,9 @@ object UserCodeService {
     }
 
     /**
-     * Creates a user account with the default permissions and the USER role.
+     * Creates a user account with the USER role. When [permissions] is null, the default
+     * permissions are granted; otherwise exactly the given set is granted (an empty list grants
+     * no permissions).
      */
     fun createUser(
         username: String,

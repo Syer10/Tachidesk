@@ -11,6 +11,7 @@ import com.expediagroup.graphql.server.extensions.getValueFromDataLoader
 import graphql.schema.DataFetchingEnvironment
 import suwayomi.tachidesk.server.user.UserCodePurpose
 import suwayomi.tachidesk.server.user.UserCodeService
+import suwayomi.tachidesk.server.user.UserPermission
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -21,6 +22,7 @@ class UserCodeType(
     val purpose: UserCodePurpose,
     val createdAt: Long,
     val expiresAt: Long,
+    val permissions: List<UserPermission>?,
     private val userId: Int?,
     private val createdById: Int,
 ) {
@@ -29,6 +31,7 @@ class UserCodeType(
         code.purpose,
         code.createdAt,
         code.expiresAt,
+        code.permissions,
         code.user,
         code.createdBy,
     )

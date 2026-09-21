@@ -1,7 +1,10 @@
 package suwayomi.tachidesk.graphql
 
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.update
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.junit.jupiter.api.AfterEach
@@ -12,12 +15,14 @@ import suwayomi.tachidesk.manga.model.table.ChapterTable
 import suwayomi.tachidesk.manga.model.table.ChapterUserTable
 import suwayomi.tachidesk.manga.model.table.MangaTable
 import suwayomi.tachidesk.manga.model.table.MangaUserTable
+import suwayomi.tachidesk.server.user.UserType
 import suwayomi.tachidesk.test.GraphQLTest
 import suwayomi.tachidesk.test.clearTables
 import suwayomi.tachidesk.test.createChapters
 import suwayomi.tachidesk.test.createLibraryManga
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ChapterMutationTest : GraphQLTest() {
     private fun firstChapterId(mangaId: Int): Int =
@@ -78,6 +83,77 @@ class ChapterMutationTest : GraphQLTest() {
 
         response.assertNoErrors()
         assertEquals(3, (response.dataPath("updateChapters", "chapters") as List<*>).size)
+    }
+
+    private fun readFlagFor(
+        chapterId: Int,
+        userId: Int,
+    ): Boolean? =
+        transaction {
+            ChapterUserTable
+                .selectAll()
+                .where { (ChapterUserTable.chapter eq chapterId) and (ChapterUserTable.user eq userId) }
+                .firstOrNull()
+                ?.get(ChapterUserTable.isRead)
+        }
+
+    @Test
+    fun updateChapterStoresReadStateForTheActingUser() {
+        val mangaId = createLibraryManga("Manga")
+        createChapters(mangaId, 3, read = false)
+        val chapterId = firstChapterId(mangaId)
+
+        // The fixture gives the admin a row; a second user starts with none.
+        val secondUserId = createTestUser("second")
+
+        val response =
+            graphql(
+                """
+                mutation(${'$'}input: UpdateChapterInput!) {
+                    updateChapter(input: ${'$'}input) {
+                        chapter {
+                            id
+                        }
+                    }
+                }
+                """.trimIndent(),
+                mapOf("input" to mapOf("id" to chapterId, "patch" to mapOf("isRead" to true))),
+                user = UserType.User(secondUserId, emptyList()),
+            )
+
+        response.assertNoErrors()
+        assertEquals(true, readFlagFor(chapterId, secondUserId))
+        // The admin's own state is untouched.
+        assertEquals(false, readFlagFor(chapterId, 1))
+    }
+
+    @Test
+    fun updateChapterAcceptsAPositionOnAnUnfetchedChapter() {
+        val mangaId = createLibraryManga("Manga")
+        createChapters(mangaId, 1, read = false)
+        val chapterId = firstChapterId(mangaId)
+
+        // A chapter whose pages have never been fetched reports -1.
+        transaction {
+            ChapterTable.update({ ChapterTable.id eq chapterId }) { it[pageCount] = -1 }
+        }
+
+        val response =
+            graphql(
+                """
+                mutation(${'$'}input: UpdateChapterInput!) {
+                    updateChapter(input: ${'$'}input) {
+                        chapter {
+                            id
+                        }
+                    }
+                }
+                """.trimIndent(),
+                mapOf("input" to mapOf("id" to chapterId, "patch" to mapOf("lastPageRead" to 5))),
+            )
+
+        response.assertNoErrors()
+        assertTrue(readFlagFor(chapterId, 1) != null)
     }
 
     @Test

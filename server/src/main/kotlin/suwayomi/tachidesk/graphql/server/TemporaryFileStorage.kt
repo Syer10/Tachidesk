@@ -44,7 +44,10 @@ object TemporaryFileStorage {
         content: InputStream,
     ): String {
         val token = generateToken(filename)
-        val file = folder.resolve(token)
+        val file = folder.resolve(token).normalize()
+        check(file.startsWith(folder)) {
+            "File $token is not in ${folder.name}"
+        }
         content.use { inStream ->
             file.outputStream().use {
                 inStream.copyTo(it)
